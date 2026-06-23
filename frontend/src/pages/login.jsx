@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-
+import { useNavigate } from 'react-router-dom';
 export default function Login() {
+const navigate = useNavigate(); // Navigation handle panna variable
+
+  // Sign in click panna run aaga intha function-ah eludhunga
+  const handleSignIn = (e) => {
+    e.preventDefault(); 
+    alert("Sign In Successfully! Opening Dashboard..."); // Click aagudhannu check panna alert
+    navigate('/'); // Unga dashboard route path-ku kootitupogum
+  };
   const [role, setRole] = useState("Student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,7 +100,7 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => e.preventDefault()} style={{ textAlign: "left" }}>
+        <form onSubmit={handleSignIn} style={{ textAlign: "left" }}>
           <label style={{ color: "#333", fontSize: "14px", fontWeight: "500" }}>Email</label>
           <input
             type="email"
