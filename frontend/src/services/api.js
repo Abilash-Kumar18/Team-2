@@ -30,16 +30,21 @@ export const apiRequest = async (endpoint, options = {}) => {
 // API Services
 export const authService = {
   login: (credentials) =>
-    apiRequest('/users/login', {
+    apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
-  register: (userData) =>
-    apiRequest('/users', {
+  registerStudent: (studentData) =>
+    apiRequest('/auth/register/student', {
       method: 'POST',
-      body: JSON.stringify(userData),
+      body: JSON.stringify(studentData),
     }),
-  getProfile: () => apiRequest('/users/profile'),
+  registerOrganizer: (organizerData) =>
+    apiRequest('/auth/register/organizer', {
+      method: 'POST',
+      body: JSON.stringify(organizerData),
+    }),
+  getProfile: () => apiRequest('/auth/profile'),
 };
 
 export const eventService = {
