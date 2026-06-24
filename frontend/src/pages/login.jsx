@@ -11,7 +11,9 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1 className="login-title">Login</h1>
+        <h1 className="login-title">
+          {role === "Student" ? "Login" : role === "Faculty" ? "Faculty Sign In" : "Organizer Login"}
+        </h1>
 
         {/* Role Toggles */}
         <div className="role-toggle-container">
@@ -29,16 +31,21 @@ export default function Login() {
 
         {/* Form */}
         <form onSubmit={(e) => e.preventDefault()} className="login-form">
-          <label className="login-label">Email</label>
+          <label className="login-label">
+            {role === "Student" ? "Email" : "Email id:"}
+          </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="login-input"
-            placeholder="Enter email"
+            placeholder={role === "Student" ? "Enter email" : "Enter email id"}
+            required
           />
 
-          <label className="login-label">Password</label>
+          <label className="login-label">
+            {role === "Student" ? "Password" : "Password:"}
+          </label>
           <div className="password-container">
             <input
               type={showPassword ? "text" : "password"}
@@ -46,6 +53,7 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               className="login-input"
               placeholder="Enter password"
+              required
             />
             <button
               type="button"
@@ -57,7 +65,9 @@ export default function Login() {
           </div>
 
           <div className="forgot-password-container">
-            <a href="#" className="forgot-password-link">Forgot Password?</a>
+            <Link to="/forgot-password" className="forgot-password-link">
+              Forgot Password?
+            </Link>
           </div>
 
           <button type="submit" className="login-submit-btn">Sign In</button>
@@ -85,10 +95,12 @@ export default function Login() {
           </button>
         </div>
 
-        <p className="signup-redirect-text">
-          If you don't have account
-          <Link to="/signup" className="signup-redirect-link">Sign Up</Link>
-        </p>
+        {role !== "Faculty" && (
+          <p className="signup-redirect-text">
+            If you don't have account
+            <Link to="/signup" className="signup-redirect-link">Sign Up</Link>
+          </p>
+        )}
       </div>
     </div>
   );
