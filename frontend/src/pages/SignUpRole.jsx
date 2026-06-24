@@ -12,13 +12,13 @@ function SignUpRole() {
         </div>
 
         <div className="role-buttons">
-          <button className="role-btn">
+          <Link to="/signup/student" className="role-btn" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
             Student
-          </button>
+          </Link>
 
-          <button className="role-btn">
+          <Link to="/signup/organizer" className="role-btn" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
             Organizer
-          </button>
+          </Link>
         </div>
 
       </div>

@@ -1,0 +1,167 @@
+.verify-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f6;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.verify-card {
+  background: linear-gradient(135deg, #9cbec3 0%, #7A9CA1 100%);
+  width: 100%;
+  max-width: 440px;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+  color: white;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header h2 {
+  font-size: 26px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.back-arrow {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 28px;
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+  line-height: 1;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.back-arrow:hover {
+  opacity: 0.8;
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.verify-description {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.verify-form {
+  text-align: center;
+}
+
+.otp-inputs-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.otp-input-field {
+  width: 56px;
+  height: 56px;
+  background-color: white;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.otp-input-field:focus {
+  outline: none;
+  border-color: #F27474;
+  box-shadow: 0 0 0 3px rgba(242, 116, 116, 0.25);
+}
+
+.resend-container {
+  margin-bottom: 30px;
+  font-size: 13px;
+}
+
+.resend-text {
+  color: white;
+  opacity: 0.9;
+}
+
+.resend-link {
+  color: #c93b3b;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  margin-left: 5px;
+}
+
+.resend-link:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+.verify-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #F27474;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(242, 116, 116, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+
+.verify-submit-btn:hover {
+  background-color: #e56363;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(242, 116, 116, 0.3);
+}
+
+.verify-submit-btn:active {
+  transform: translateY(0);
+}
+
+/* Media Queries for Desktop view */
+@media (min-width: 768px) {
+  .verify-card {
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 480px;
+  }
+}
+
+/* Media Queries for small mobile devices */
+@media (max-width: 480px) {
+  .verify-card {
+    padding: 24px 20px;
+  }
+  .otp-input-field {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+  .otp-inputs-container {
+    gap: 10px;
+  }
+}
