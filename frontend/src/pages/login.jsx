@@ -1,21 +1,19 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./login.css";
 
-import { useNavigate } from 'react-router-dom';
 export default function Login() {
-const navigate = useNavigate(); // Navigation handle panna variable
-
-  // Sign in click panna run aaga intha function-ah eludhunga
-  const handleSignIn = (e) => {
-    e.preventDefault(); 
-    alert("Sign In Successfully! Opening Dashboard..."); // Click aagudhannu check panna alert
-    navigate('/'); // Unga dashboard route path-ku kootitupogum
-  };
+  const navigate = useNavigate();
   const [role, setRole] = useState("Student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSignIn = (e) => {
+    e.preventDefault();
+    alert("Sign In Successfully! Opening Dashboard...");
+    navigate("/dashboard");
+  };
 
   return (
     <div className="login-container">
