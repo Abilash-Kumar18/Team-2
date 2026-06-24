@@ -39,12 +39,10 @@ const navigate = useNavigate(); // Navigation handle panna variable
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => e.preventDefault()} className="login-form">
+        <form onSubmit={handleSignIn} className="login-form">
           <label className="login-label">
             {role === "Student" ? "Email" : "Email id:"}
           </label>
-        <form onSubmit={handleSignIn} style={{ textAlign: "left" }}>
-          <label style={{ color: "#333", fontSize: "14px", fontWeight: "500" }}>Email</label>
           <input
             type="email"
             value={email}
