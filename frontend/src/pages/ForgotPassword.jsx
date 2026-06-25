@@ -1,15 +1,29 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { authService } from "../services/api";
 import "./ForgotPassword.css";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Reset code sent to your email!");
-    navigate("/verify");
+    setError("");
+    setLoading(true);
+
+    try {
+      await authService.forgotPassword(email);
+      localStorage.setItem("resetEmail", email);
+      alert("Reset code sent to your email!");
+      navigate("/verify");
+    } catch (err) {
+      setError(err.message || "Failed to send reset code. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -26,6 +40,12 @@ export default function ForgotPassword() {
         </p>
 
         <form onSubmit={handleSubmit} className="forgot-form">
+          {error && (
+            <div className="error-message" style={{ color: "red", marginBottom: "15px", fontSize: "14px", textAlign: "center" }}>
+              {error}
+            </div>
+          )}
+
           <label className="forgot-label">Email id:</label>
           <input
             type="email"
@@ -34,9 +54,14 @@ export default function ForgotPassword() {
             className="forgot-input"
             placeholder="Enter your email address"
             required
+            pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|ksrce\.ac\.in)$"
+            title="Email address must end with @gmail.com or @ksrce.ac.in"
+            disabled={loading}
           />
 
-          <button type="submit" className="forgot-submit-btn">Submit</button>
+          <button type="submit" className="forgot-submit-btn" disabled={loading}>
+            {loading ? "Submitting..." : "Submit"}
+          </button>
         </form>
       </div>
     </div>

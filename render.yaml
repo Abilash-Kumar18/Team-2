@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: college-event-management-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false # Pushes a prompt to the user to enter their MongoDB connection URI
+      - key: JWT_SECRET
+        generateValue: true # Generates a secure random token automatically
+      - key: FRONTEND_URL
+        sync: false # Pushes a prompt to the user to enter their deployed frontend Vercel URL
+      - key: SMTP_HOST
+        value: smtp.ethereal.email
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: College Event Management
+      - key: SMTP_FROM_EMAIL
+        value: noreply@collegeevents.com
