@@ -37,6 +37,11 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
+  googleLogin: (tokenData) =>
+    apiRequest('/auth/google-login', {
+      method: 'POST',
+      body: JSON.stringify(tokenData),
+    }),
   registerStudent: (userData) =>
     apiRequest('/auth/register/student', {
       method: 'POST',
