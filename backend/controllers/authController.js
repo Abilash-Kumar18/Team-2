@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { OAuth2Client } = require('google-auth-library');
 
 const generateToken = (id, role) => {
   if (!process.env.JWT_SECRET) {
@@ -438,6 +439,93 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Google OAuth Login
+// @route   POST /api/auth/google-login
+// @access  Public
+const googleLogin = async (req, res, next) => {
+  let { token, role } = req.body;
+
+  try {
+    if (token !== undefined && typeof token !== 'string') {
+      res.status(400);
+      throw new Error('Token must be a string.');
+    }
+    if (role !== undefined && typeof role !== 'string') {
+      res.status(400);
+      throw new Error('Role must be a string.');
+    }
+
+    token = token ? token.trim() : '';
+    role = role ? role.trim() : '';
+
+    if (!token || !role) {
+      res.status(400);
+      throw new Error('Please provide Google token and role');
+    }
+
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (err) {
+      res.status(400);
+      throw new Error('Invalid Google token');
+    }
+
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+
+    if (!email) {
+      res.status(400);
+      throw new Error('Google account email is missing');
+    }
+
+    // Find or create user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user with Google details
+      user = await User.create({
+        role,
+        email,
+        name,
+        // Create a random secure password for Google logins
+        password: Math.random().toString(36).slice(-8) + Math.random().toString(36).toUpperCase().slice(-8),
+        isApproved: role === 'organizer' ? false : true, // organizers must be approved
+      });
+    } else {
+      // Verify role matches
+      if (user.role !== role) {
+        res.status(400);
+        throw new Error(`Account already exists with a different role: ${user.role}`);
+      }
+    }
+
+    // Organizer approval check
+    if (role === 'organizer' && !user.isApproved) {
+      res.status(403);
+      throw new Error('Approval pending from faculty');
+    }
+
+    res.json({
+      success: true,
+      token: generateToken(user._id, user.role),
+      user: {
+        _id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        isApproved: user.isApproved,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerStudent,
   registerOrganizer,
@@ -446,5 +534,6 @@ module.exports = {
   verifyOtp,
   resetPassword,
   getUserProfile,
+  googleLogin,
 };
 
