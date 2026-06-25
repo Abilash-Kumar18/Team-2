@@ -54,6 +54,8 @@ export default function ForgotPassword() {
             className="forgot-input"
             placeholder="Enter your email address"
             required
+            pattern="^[a-zA-Z0-9._%+-]+@(gmail\.com|ksrce\.ac\.in)$"
+            title="Email address must end with @gmail.com or @ksrce.ac.in"
             disabled={loading}
           />
 
