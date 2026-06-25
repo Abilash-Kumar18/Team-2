@@ -7,7 +7,7 @@ import OrganizerSignUp from './pages/OrganizerSignUp';
 import ForgotPassword from './pages/ForgotPassword';
 import Verification from './pages/Verification';
 import ResetPassword from './pages/ResetPassword';
-import Login from './pages/login.jsx'; 
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -21,16 +21,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify" element={<Verification />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
-      <div className="app-container">
-        <main className="main-content">
-          <Routes>
-            {/* Matra missing files lam temporary-ah thookiyachu, so error varathu */}
-            <Route path="/" element={<Login />} /> 
-            <Route path="/login" element={<Login />} /> 
-          </Routes>
-        </main>
-      </div>
     </Router>
   );
 }
