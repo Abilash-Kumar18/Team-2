@@ -85,3 +85,44 @@ Create a file named `.env` inside the `frontend/` directory with the following v
 - **Core Libraries**: `react`, `react-dom`
 - **Routing**: `react-router-dom`
 - **Build / Dev Tools**: `vite`, `@vitejs/plugin-react`
+
+---
+
+## Deployment Guides
+
+### Frontend Deployment (Vercel)
+Vercel is optimized for frontend hosting. Follow these steps:
+
+1. **Deploy Repository**:
+   - Link your GitHub repository to Vercel.
+   - Choose `frontend` as the **Root Directory** of your Vercel project.
+   - Select **Vite** as the framework preset (Vercel will auto-configure build commands: `npm run build` and output directory: `dist`).
+
+2. **Environment Configuration**:
+   - Add the following environment variable to the Vercel dashboard:
+     - `VITE_API_URL`: Set this to your deployed backend URL on Render (e.g. `https://college-event-backend.onrender.com/api`).
+
+3. **Routing Rewrites**:
+   - The project includes a `frontend/vercel.json` rewrite file to ensure that client-side SPA routes (such as `/login` or `/dashboard`) resolve correctly on page refresh.
+
+---
+
+### Backend Deployment (Render)
+Render is configured to host Node.js applications. Follow these steps:
+
+1. **Deploy Repository**:
+   - Create a new **Web Service** on Render and link your GitHub repository.
+   - Set the **Root Directory** to `backend`.
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+   - Alternatively, you can use the **Render Blueprint** (`render.yaml`) to automatically provision this service.
+
+2. **Environment Configuration**:
+   - Add the following environment variables to your Render Web Service dashboard:
+     - `NODE_ENV`: `production`
+     - `PORT`: `5000`
+     - `MONGO_URI`: *[Your MongoDB connection URI]*
+     - `JWT_SECRET`: *[Generate a strong secret key]*
+     - `FRONTEND_URL`: *[Your deployed Vercel frontend URL]* (e.g. `https://college-event-frontend.vercel.app`)
+     - Configure optional SMTP variables for email support if needed (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, etc.).
+
