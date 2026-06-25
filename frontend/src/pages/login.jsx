@@ -1,24 +1,204 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { authService } from "../services/api";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import logoImg from "../assets/images/logo.jpg";
 import "./login.css";
-
 export default function Login() {
   const navigate = useNavigate();
   const [role, setRole] = useState("Student");
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    setLoading(true);
+    try {
+      const roleMap = {
+        Student: "student",
+        Faculty: "faculty",
+        Organizer: "organizer",
+      };
+
+      const res = await authService.googleLogin({
+        token: credentialResponse.credential,
+        role: roleMap[role],
+      });
+
+      // Store token and user data
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+
+      // Navigate to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setError("Google Sign-In failed. Please try again.");
+  };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSignIn = (e) => {
+  // Remember Me & reCAPTCHA state
+  const [rememberMe, setRememberMe] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState("");
+
+  // Entrance logo overlay animation states
+  const [showLogoOverlay, setShowLogoOverlay] = useState(true);
+  const [overlayFadeOut, setOverlayFadeOut] = useState(false);
+
+  useEffect(() => {
+    // 1. Logo overlay fade out timers
+    const fadeTimer = setTimeout(() => {
+      setOverlayFadeOut(true);
+    }, 1200);
+    const removeTimer = setTimeout(() => {
+      setShowLogoOverlay(false);
+    }, 1800);
+
+    // 2. Load Google reCAPTCHA v2 API explicitly
+    const scriptId = "google-recaptcha-script";
+    let script = document.getElementById(scriptId);
+
+    const renderRecaptcha = () => {
+      if (window.grecaptcha && window.grecaptcha.render) {
+        try {
+          window.grecaptcha.render("recaptcha-container", {
+            sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+            callback: (token) => {
+              setRecaptchaToken(token);
+              setError("");
+            },
+            "expired-callback": () => {
+              setRecaptchaToken("");
+            }
+          });
+        } catch (e) {
+          console.warn("reCAPTCHA render warning:", e);
+        }
+      }
+    };
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit";
+      script.async = true;
+      script.defer = true;
+      window.onRecaptchaLoad = () => {
+        renderRecaptcha();
+      };
+      document.body.appendChild(script);
+    } else {
+      if (window.grecaptcha && window.grecaptcha.render) {
+        renderRecaptcha();
+      } else {
+        window.onRecaptchaLoad = () => {
+          renderRecaptcha();
+        };
+      }
+    }
+
+    // 3. Retrieve remembered email and role
+    const remembered = localStorage.getItem("rememberedEmail");
+    const rememberedRole = localStorage.getItem("rememberedRole");
+    if (remembered) {
+      setEmail(remembered);
+      setRememberMe(true);
+    }
+    if (rememberedRole) {
+      setRole(rememberedRole);
+    }
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+      window.onRecaptchaLoad = null;
+    };
+  }, []);
+
+  const handleSignIn = async (e) => {
     e.preventDefault();
-    alert("Sign In Successfully! Opening Dashboard...");
-    navigate("/dashboard");
+    setError("");
+
+    // Validate reCAPTCHA response token
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA challenge.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const roleMap = {
+        Student: "student",
+        Faculty: "faculty",
+        Organizer: "organizer",
+      };
+
+      const response = await authService.login({
+        email,
+        password,
+        role: roleMap[role],
+        recaptchaToken,
+      });
+
+      // Handle Remember Me credentials storage
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+        localStorage.setItem("rememberedRole", role);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberedRole");
+      }
+
+      // Store token and user data
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      // Navigate to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+      if (window.grecaptcha) {
+        window.grecaptcha.reset();
+        setRecaptchaToken("");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="login-container">
+      {showLogoOverlay && (
+        <div className="login-logo-overlay" style={{ opacity: overlayFadeOut ? 0 : 1 }}>
+          <img 
+            src={logoImg} 
+            alt="Campus Events Logo" 
+            className="login-overlay-logo"
+          />
+        </div>
+      )}
       <div className="login-card">
-        <h1 className="login-title">
+        {/* Product Brand & Logo */}
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <img 
+            src={logoImg} 
+            alt="Campus Events Logo" 
+            style={{ width: "90px", height: "90px", borderRadius: "12px", marginBottom: "8px", boxShadow: "0 8px 16px rgba(0,0,0,0.15)" }} 
+          />
+          <h2 style={{ fontSize: "22px", fontWeight: "800", color: "#3a7a10", margin: "0", letterSpacing: "0.5px" }}>CAMPUS EVENTS</h2>
+          <p style={{ fontSize: "11px", color: "#666", margin: "2px 0 0 0", letterSpacing: "1px", textTransform: "uppercase", fontWeight: "600" }}>Student Portal</p>
+        </div>
+
+        <h1 className="login-title" style={{ fontSize: "16px", marginTop: "5px", color: "#444" }}>
           {role === "Student" ? "Login" : role === "Faculty" ? "Faculty Sign In" : "Organizer Login"}
         </h1>
 
@@ -38,6 +218,12 @@ export default function Login() {
 
         {/* Form */}
         <form onSubmit={handleSignIn} className="login-form">
+          {error && (
+            <div className="error-message" style={{ color: "red", marginBottom: "15px", fontSize: "14px", textAlign: "center" }}>
+              {error}
+            </div>
+          )}
+          
           <label className="login-label">
             {role === "Student" ? "Email" : "Email id:"}
           </label>
@@ -48,6 +234,7 @@ export default function Login() {
             className="login-input"
             placeholder={role === "Student" ? "Enter email" : "Enter email id"}
             required
+            disabled={loading}
           />
 
           <label className="login-label">
@@ -61,46 +248,64 @@ export default function Login() {
               className="login-input"
               placeholder="Enter password"
               required
+              disabled={loading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="password-toggle-btn"
+              disabled={loading}
             >
               {showPassword ? "👁️" : "👁️‍🗨️"}
             </button>
           </div>
 
-          <div className="forgot-password-container">
-            <Link to="/forgot-password" className="forgot-password-link">
-              Forgot Password?
-            </Link>
+          {/* Security Captcha Section (Google reCAPTCHA v2) */}
+          <div style={{ marginBottom: "16px", display: "flex", justifyContent: "center" }}>
+            <div id="recaptcha-container"></div>
           </div>
 
-          <button type="submit" className="login-submit-btn">Sign In</button>
+          {/* Remember Me and Forgot Password Container */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ cursor: "pointer", width: "14px", height: "14px" }}
+              />
+              <label htmlFor="rememberMe" style={{ fontSize: "13px", color: "#666", cursor: "pointer", userSelect: "none" }}>
+                Remember me
+              </label>
+            </div>
+            <div className="forgot-password-container" style={{ margin: 0 }}>
+              <Link to="/forgot-password" className="forgot-password-link" style={{ fontSize: "13px" }}>
+                Forgot Password?
+              </Link>
+            </div>
+          </div>
+
+          <button type="submit" className="login-submit-btn" disabled={loading}>
+            {loading ? "Signing In..." : "Sign In"}
+          </button>
         </form>
 
-        {/* Social Buttons with Accurate SVGs */}
-        <div className="social-buttons-container">
-          {/* Google Button */}
-          <button className="social-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.61a5.66 5.66 0 0 1-2.45 3.71v3.08h3.95a11.95 11.95 0 0 0 3.63-8.64z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.95-3.08c-1.1.74-2.5 1.18-3.98 1.18-3.07 0-5.67-2.08-6.6-4.88H1.31v3.18A12 12 0 0 0 12 24z"/>
-              <path fill="#FBBC05" d="M5.4 14.31A7.16 7.16 0 0 1 5 12c0-.8.14-1.57.4-2.31V6.51H1.31A11.99 11.99 0 0 0 0 12c0 2.22.6 4.3 1.66 6.1l3.74-2.89z"/>
-              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44A11.9 11.9 0 0 0 12 0 12 12 0 0 0 1.31 6.51l4.09 3.19c.93-2.8 3.53-4.95 6.6-4.95z"/>
-            </svg>
-            Sign In With Google
-          </button>
-
-          {/* Apple Button */}
-          <button className="social-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#000000">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>
-            </svg>
-            Sign In With Apple
-          </button>
+        {/* Google Sign-in Container */}
+        <div style={{ marginTop: "15px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <p style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#666" }}>or</p>
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              width="280px"
+            />
+          </GoogleOAuthProvider>
         </div>
+
+
 
         {role !== "Faculty" && (
           <p className="signup-redirect-text">
