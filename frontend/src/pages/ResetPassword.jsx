@@ -82,6 +82,9 @@ export default function ResetPassword() {
               className="reset-input"
               placeholder="Enter new password"
               required
+              minLength="8"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"
+              title="Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
               disabled={loading}
             />
             <button
@@ -104,6 +107,9 @@ export default function ResetPassword() {
               className="reset-input"
               placeholder="Confirm new password"
               required
+              minLength="8"
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$"
+              title="Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
               disabled={loading}
             />
             <button

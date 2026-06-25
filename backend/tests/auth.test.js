@@ -11,20 +11,12 @@ const mockFacultyId = '507f1f77bcf86cd799439012';
 const mockStudentId = '507f1f77bcf86cd799439013';
 const mockOrganizerId = '507f1f77bcf86cd799439014';
 
-// Mock Mongoose connectivity while preserving all schemas and Types classes
 jest.mock('mongoose', () => {
   const actualMongoose = jest.requireActual('mongoose');
-  return {
-    ...actualMongoose,
-    connect: jest.fn().mockResolvedValue({
-      connection: { host: 'mock-host' }
-    }),
-    connection: {
-      ...actualMongoose.connection,
-      close: jest.fn().mockResolvedValue(true),
-      readyState: 1,
-    },
-  };
+  actualMongoose.set('autoIndex', false);
+  actualMongoose.connect = jest.fn().mockResolvedValue(actualMongoose);
+  actualMongoose.connection.close = jest.fn().mockResolvedValue(true);
+  return actualMongoose;
 });
 
 // Mock the User model specifically so that DB queries are intercepted
@@ -109,7 +101,7 @@ describe('College Event Management Auth System', () => {
         _id: mockStudentId,
         role: 'student',
         name: 'John Doe',
-        email: 'student@college.edu',
+        email: 'student@gmail.com',
         mobileNumber: '9876543210',
         regNo: 'STU12345',
         deptYear: 'CSE-3rd',
@@ -122,9 +114,9 @@ describe('College Event Management Auth System', () => {
           name: 'John Doe',
           regNo: 'STU12345',
           deptYear: 'CSE-3rd',
-          email: 'student@college.edu',
+          email: 'student@gmail.com',
           mobileNumber: '9876543210',
-          password: 'securePassword123'
+          password: 'SecurePassword@123'
         });
 
       expect(res.statusCode).toBe(201);
@@ -132,10 +124,10 @@ describe('College Event Management Auth System', () => {
       expect(res.body.token).toBeDefined();
       expect(res.body.user.role).toBe('student');
       expect(res.body.user.isApproved).toBe(true);
-      expect(User.findOne).toHaveBeenCalledWith({ email: 'student@college.edu' });
+      expect(User.findOne).toHaveBeenCalledWith({ email: 'student@gmail.com' });
       expect(User.create).toHaveBeenCalledWith(expect.objectContaining({
         role: 'student',
-        email: 'student@college.edu',
+        email: 'student@gmail.com',
         regNo: 'STU12345',
       }));
     });
@@ -145,12 +137,76 @@ describe('College Event Management Auth System', () => {
         .post('/api/auth/register/student')
         .send({
           name: 'John Doe',
-          email: 'student@college.edu',
-          password: 'securePassword123'
+          email: 'student@gmail.com',
+          password: 'SecurePassword@123'
         });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toContain('Please fill in all required fields');
+    });
+
+    it('should fail registration if name contains digits', async () => {
+      const res = await request(app)
+        .post('/api/auth/register/student')
+        .send({
+          name: 'John Doe123',
+          regNo: 'STU12345',
+          deptYear: 'CSE-3rd',
+          email: 'student@gmail.com',
+          mobileNumber: '9876543210',
+          password: 'SecurePassword@123'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toContain('Name must contain only alphabets and spaces.');
+    });
+
+    it('should fail registration if email domain is not allowed', async () => {
+      const res = await request(app)
+        .post('/api/auth/register/student')
+        .send({
+          name: 'John Doe',
+          regNo: 'STU12345',
+          deptYear: 'CSE-3rd',
+          email: 'student@invalid.com',
+          mobileNumber: '9876543210',
+          password: 'SecurePassword@123'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toContain('Email address must end with @gmail.com or @ksrce.ac.in.');
+    });
+
+    it('should fail registration if password does not meet advanced requirements', async () => {
+      const res = await request(app)
+        .post('/api/auth/register/student')
+        .send({
+          name: 'John Doe',
+          regNo: 'STU12345',
+          deptYear: 'CSE-3rd',
+          email: 'student@gmail.com',
+          mobileNumber: '9876543210',
+          password: 'weak'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toContain('Password must be at least 8 characters long');
+    });
+
+    it('should fail registration if mobile is not 10 digits', async () => {
+      const res = await request(app)
+        .post('/api/auth/register/student')
+        .send({
+          name: 'John Doe',
+          regNo: 'STU12345',
+          deptYear: 'CSE-3rd',
+          email: 'student@gmail.com',
+          mobileNumber: '98765432',
+          password: 'SecurePassword@123'
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toContain('Mobile number must be a valid 10-digit number with optional +91 prefix.');
     });
   });
 
@@ -162,7 +218,7 @@ describe('College Event Management Auth System', () => {
         role: 'organizer',
         name: 'ACM Club',
         regNo: 'ORG555',
-        email: 'acm@college.edu',
+        email: 'acm@gmail.com',
         mobileNumber: '1122334455',
         clubName: 'ACM Student Chapter',
         isApproved: false,
@@ -173,10 +229,10 @@ describe('College Event Management Auth System', () => {
         .send({
           name: 'ACM Club',
           regNo: 'ORG555',
-          email: 'acm@college.edu',
+          email: 'acm@gmail.com',
           mobileNumber: '1122334455',
           clubName: 'ACM Student Chapter',
-          password: 'securePassword456'
+          password: 'SecurePassword@456'
         });
 
       expect(res.statusCode).toBe(201);
@@ -192,7 +248,7 @@ describe('College Event Management Auth System', () => {
         .post('/api/auth/login')
         .send({
           email: { $gt: '' },
-          password: 'securePassword123',
+          password: 'SecurePassword@123',
           role: 'student'
         });
 
@@ -291,7 +347,7 @@ describe('College Event Management Auth System', () => {
         .send({
           name: 'Dr. Smith',
           email: 'smith@college.edu',
-          password: 'facultyPassword123'
+          password: 'FacultyPassword@123'
         });
 
       expect(res.statusCode).toBe(201);
@@ -312,7 +368,7 @@ describe('College Event Management Auth System', () => {
         .send({
           name: 'Dr. Smith',
           email: 'smith@college.edu',
-          password: 'facultyPassword123'
+          password: 'FacultyPassword@123'
         });
 
       expect(res.statusCode).toBe(403);
@@ -399,12 +455,12 @@ describe('College Event Management Auth System', () => {
         .send({
           email: 'forgot@college.edu',
           otp: mockUser.resetPasswordOtp,
-          newPassword: 'newShinyPassword123'
+          newPassword: 'NewShinyPassword@123'
         });
 
       expect(resetRes.statusCode).toBe(200);
       expect(resetRes.body.success).toBe(true);
-      expect(mockUser.password).toBe('newShinyPassword123');
+      expect(mockUser.password).toBe('NewShinyPassword@123');
       expect(mockUser.resetPasswordOtp).toBeUndefined();
       expect(mockUser.resetPasswordExpires).toBeUndefined();
     });
