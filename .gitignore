@@ -1,7 +1,8 @@
 # Dependency directories
 node_modules/
 jspm_packages/
-
+backend/.env
+frontend/.env
 # Local configuration files
 .env
 .env.local
