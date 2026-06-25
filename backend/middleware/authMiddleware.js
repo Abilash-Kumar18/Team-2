@@ -7,11 +7,20 @@ const protect = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallbacksecret');
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET environment variable is missing');
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select('-password');
+      
+      if (!req.user) {
+        res.status(401);
+        return next(new Error('Not authorized, user not found'));
+      }
+      
       return next();
     } catch (error) {
-      console.error(error);
+      console.error('JWT Verification Error:', error.message);
       res.status(401);
       return next(new Error('Not authorized, token failed'));
     }
@@ -23,13 +32,23 @@ const protect = async (req, res, next) => {
   }
 };
 
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403);
+      return next(new Error(`Role (${req.user?.role || 'Guest'}) is not authorized to access this resource`));
+    }
+    next();
+  };
+};
+
 const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    res.status(401);
+    res.status(403);
     next(new Error('Not authorized as an admin'));
   }
 };
 
-module.exports = { protect, admin };
+module.exports = { protect, authorizeRoles, admin };
