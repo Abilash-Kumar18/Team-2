@@ -31,8 +31,13 @@ connectDB();
 const app = express();
 
 app.use(helmet());
+const allowedOrigins = ['http://localhost:5173', 'https://team-2-frontend-pink.vercel.app'];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://team-2-frontend-pink.vercel.app',
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());
