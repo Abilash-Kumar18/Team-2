@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "../services/api";
 import "./Verification.css";
@@ -9,6 +9,17 @@ export default function Verification() {
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Resend countdown timer state (60 seconds)
+  const [timerSeconds, setTimerSeconds] = useState(60);
+
+  useEffect(() => {
+    if (timerSeconds <= 0) return;
+    const interval = setInterval(() => {
+      setTimerSeconds((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerSeconds]);
 
   const handleChange = (element, index) => {
     const value = element.value;
@@ -72,6 +83,7 @@ export default function Verification() {
     try {
       await authService.forgotPassword(email);
       alert("A new OTP code has been sent to your email!");
+      setTimerSeconds(60); // Restart countdown timer
     } catch (err) {
       setError(err.message || "Failed to resend OTP. Please try again.");
     } finally {
@@ -118,14 +130,20 @@ export default function Verification() {
 
           <div className="resend-container">
             <span className="resend-text">Didn't receive the code? </span>
-            <a
-              href="#"
-              className="resend-link"
-              onClick={handleResendOtp}
-              style={{ pointerEvents: loading ? "none" : "auto", opacity: loading ? 0.6 : 1 }}
-            >
-              Resend OTP
-            </a>
+            {timerSeconds > 0 ? (
+              <span className="resend-timer-text" style={{ color: "#EEFF6E", fontWeight: "600", marginLeft: "4px" }}>
+                Resend OTP in {timerSeconds}s
+              </span>
+            ) : (
+              <a
+                href="#"
+                className="resend-link"
+                onClick={handleResendOtp}
+                style={{ pointerEvents: loading ? "none" : "auto", opacity: loading ? 0.6 : 1 }}
+              >
+                Resend OTP
+              </a>
+            )}
           </div>
 
           <button type="submit" className="verify-submit-btn" disabled={loading}>
