@@ -93,6 +93,41 @@ const registerStudent = async (req, res, next) => {
       throw new Error('Please fill in all required fields (name, regNo, deptYear, email, password)');
     }
 
+    // Alphabet-only name validation
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(name)) {
+      res.status(400);
+      throw new Error('Name must contain only alphabets and spaces.');
+    }
+
+    // Email format validation (@gmail.com or @ksrce.ac.in)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|ksrce\.ac\.in)$/;
+    if (!emailRegex.test(email)) {
+      res.status(400);
+      throw new Error('Email address must end with @gmail.com or @ksrce.ac.in.');
+    }
+
+    // Password constraints (advanced requirements)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      res.status(400);
+      throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).');
+    }
+
+    // Mobile number validation (10 digits with optional +91 prefix)
+    let formattedMobile = mobileNumber;
+    const plainMobileRegex = /^\d{10}$/;
+    const prefixedMobileRegex = /^\+91\d{10}$/;
+
+    if (plainMobileRegex.test(mobileNumber)) {
+      formattedMobile = `+91${mobileNumber}`;
+    } else if (prefixedMobileRegex.test(mobileNumber)) {
+      formattedMobile = mobileNumber;
+    } else if (mobileNumber) {
+      res.status(400);
+      throw new Error('Mobile number must be a valid 10-digit number with optional +91 prefix.');
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       res.status(400);
@@ -105,7 +140,7 @@ const registerStudent = async (req, res, next) => {
       regNo,
       deptYear,
       email,
-      mobileNumber,
+      mobileNumber: formattedMobile,
       password,
       isApproved: true, // students are automatically approved
     });
@@ -162,6 +197,41 @@ const registerOrganizer = async (req, res, next) => {
       throw new Error('Please fill in all required fields (name, regNo, clubName, email, password)');
     }
 
+    // Alphabet-only name validation
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!nameRegex.test(name)) {
+      res.status(400);
+      throw new Error('Organizer name must contain only alphabets and spaces.');
+    }
+
+    // Email format validation (@gmail.com or @ksrce.ac.in)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail\.com|ksrce\.ac\.in)$/;
+    if (!emailRegex.test(email)) {
+      res.status(400);
+      throw new Error('Email address must end with @gmail.com or @ksrce.ac.in.');
+    }
+
+    // Password constraints (advanced requirements)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      res.status(400);
+      throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).');
+    }
+
+    // Mobile number validation (10 digits with optional +91 prefix)
+    let formattedMobile = mobileNumber;
+    const plainMobileRegex = /^\d{10}$/;
+    const prefixedMobileRegex = /^\+91\d{10}$/;
+
+    if (plainMobileRegex.test(mobileNumber)) {
+      formattedMobile = `+91${mobileNumber}`;
+    } else if (prefixedMobileRegex.test(mobileNumber)) {
+      formattedMobile = mobileNumber;
+    } else if (mobileNumber) {
+      res.status(400);
+      throw new Error('Mobile number must be a valid 10-digit number with optional +91 prefix.');
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       res.status(400);
@@ -173,7 +243,7 @@ const registerOrganizer = async (req, res, next) => {
       name,
       regNo,
       email,
-      mobileNumber,
+      mobileNumber: formattedMobile,
       clubName,
       password,
       isApproved: false, // organizers must be approved by faculty
@@ -202,14 +272,15 @@ const registerOrganizer = async (req, res, next) => {
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res, next) => {
-  let { email, password, role } = req.body;
+  let { email, password, role, recaptchaToken } = req.body;
 
   try {
     // 1. NoSQL Injection Prevention
     if (
       (email !== undefined && typeof email !== 'string') ||
       (password !== undefined && typeof password !== 'string') ||
-      (role !== undefined && typeof role !== 'string')
+      (role !== undefined && typeof role !== 'string') ||
+      (recaptchaToken !== undefined && typeof recaptchaToken !== 'string')
     ) {
       res.status(400);
       throw new Error('Invalid input types. All fields must be strings.');
@@ -218,10 +289,34 @@ const loginUser = async (req, res, next) => {
     email = email ? email.trim().toLowerCase() : '';
     password = password ? password.trim() : '';
     role = role ? role.trim() : '';
+    recaptchaToken = recaptchaToken ? recaptchaToken.trim() : '';
 
     if (!email || !password || !role) {
       res.status(400);
       throw new Error('Please provide email, password, and role');
+    }
+
+    // Google reCAPTCHA Verification (only when SECRET_KEY is set in environment)
+    const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY;
+    if (recaptchaSecret) {
+      if (!recaptchaToken) {
+        res.status(400);
+        throw new Error('Please complete the reCAPTCHA challenge.');
+      }
+
+      try {
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptchaToken}`;
+        const response = await fetch(verificationUrl, { method: 'POST' });
+        const verifyData = await response.json();
+
+        if (!verifyData.success) {
+          res.status(400);
+          throw new Error('reCAPTCHA verification failed. Please try again.');
+        }
+      } catch (err) {
+        res.status(400);
+        throw new Error(err.message || 'reCAPTCHA verification system error.');
+      }
     }
 
     // 2. Match timing logic: Use a dummy comparison if user is not found to prevent user enumeration
@@ -385,9 +480,10 @@ const resetPassword = async (req, res, next) => {
       throw new Error('Please provide email, OTP, and newPassword');
     }
 
-    if (newPassword.length < 6) {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
       res.status(400);
-      throw new Error('Password must be at least 6 characters long');
+      throw new Error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&).');
     }
 
     const user = await User.findOne({
