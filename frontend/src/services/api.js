@@ -1,4 +1,7 @@
-const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
+let API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
+if (API_URL && !API_URL.endsWith('/api') && !API_URL.endsWith('/api/')) {
+  API_URL = `${API_URL.replace(/\/$/, '')}/api`;
+}
 
 const getHeaders = () => {
   const token = localStorage.getItem('token');
@@ -30,16 +33,41 @@ export const apiRequest = async (endpoint, options = {}) => {
 // API Services
 export const authService = {
   login: (credentials) =>
-    apiRequest('/users/login', {
+    apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
-  register: (userData) =>
-    apiRequest('/users', {
+  googleLogin: (tokenData) =>
+    apiRequest('/auth/google-login', {
+      method: 'POST',
+      body: JSON.stringify(tokenData),
+    }),
+  registerStudent: (userData) =>
+    apiRequest('/auth/register/student', {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
-  getProfile: () => apiRequest('/users/profile'),
+  registerOrganizer: (userData) =>
+    apiRequest('/auth/register/organizer', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    }),
+  forgotPassword: (email) =>
+    apiRequest('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  verifyOtp: (email, otp) =>
+    apiRequest('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    }),
+  resetPassword: (email, otp, newPassword) =>
+    apiRequest('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword }),
+    }),
+  getProfile: () => apiRequest('/auth/profile'),
 };
 
 export const eventService = {
