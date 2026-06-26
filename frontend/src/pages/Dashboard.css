@@ -25,6 +25,21 @@
   overflow: hidden;
 }
 
+/* Sidebar backdrop overlay when open */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .dashboard-container::before {
   content: "";
   position: absolute;
@@ -58,8 +73,25 @@
   flex-direction: column;
   padding: 24px;
   z-index: 10;
-  transition: transform 0.3s ease;
-  backdrop-filter: blur(10px);
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+}
+
+.dashboard-sidebar.open {
+  transform: translateX(0);
+}
+
+/* Push main content when sidebar is open on large screens */
+@media (min-width: 1024px) {
+  .dashboard-sidebar.open + .dashboard-main {
+    margin-left: 280px;
+  }
 }
 
 .sidebar-header {
@@ -211,30 +243,49 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
+  gap: 16px;
 }
 
-.welcome-section h1 {
+.welcome-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.welcome-text h1 {
   font-size: 26px;
   font-weight: 800;
   color: #fff;
   margin: 0;
 }
 
-.welcome-section p {
+.welcome-text p {
   font-size: 14px;
   color: var(--dash-text-muted);
   margin: 4px 0 0 0;
 }
 
 .mobile-menu-toggle {
-  display: none;
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
   border: 1px solid var(--dash-border);
   color: #fff;
   font-size: 20px;
-  padding: 8px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mobile-menu-toggle:hover {
+  background: rgba(159, 224, 74, 0.15);
+  border-color: var(--brand-green-light);
+  color: var(--brand-green-light);
 }
 
 /* Dashboard Home Card Layout */
@@ -1027,25 +1078,12 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    transform: translateX(-100%);
-    box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-  }
-
-  .dashboard-sidebar.open {
-    transform: translateX(0);
-  }
-
-  .mobile-menu-toggle {
-    display: block;
-  }
-
   .dashboard-main {
     padding: 20px;
+  }
+
+  .welcome-text h1 {
+    font-size: 20px;
   }
   
   .dashboard-summary-banner {
@@ -1060,3 +1098,39 @@
     gap: 16px;
   }
 }
+
+/* Dashboard home split layout for registrations & announcements */
+.home-split-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 30px;
+}
+
+@media (max-width: 992px) {
+  .home-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Larger stat cards for overview */
+.stat-card-lg {
+  padding: 28px 24px;
+  gap: 20px;
+}
+
+.stat-card-lg .stat-icon {
+  font-size: 34px;
+  width: 64px;
+  height: 64px;
+}
+
+.stat-card-lg .stat-value {
+  font-size: 28px;
+}
+
+.stat-card-lg .stat-label {
+  font-size: 13px;
+}
+
+

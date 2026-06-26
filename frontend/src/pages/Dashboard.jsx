@@ -96,6 +96,7 @@ export default function Dashboard() {
   });
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [browseFilter, setBrowseFilter] = useState('all'); // 'all' | 'upcoming' | 'closed'
 
   // Data States
   const [events, setEvents] = useState([]);
@@ -615,7 +616,7 @@ export default function Dashboard() {
   const isOrganizer = user.role === 'organizer';
   
   const studentTabs = [
-    { id: 'home', label: 'Dashboard', icon: '🏠' },
+    { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'browse-events', label: 'Browse Events', icon: '🔍' },
     { id: 'registrations', label: 'My Registrations', icon: '📝' },
     { id: 'attendance', label: 'My Attendance', icon: '📱' },
@@ -626,7 +627,7 @@ export default function Dashboard() {
   ];
 
   const organizerTabs = [
-    { id: 'home', label: 'Dashboard', icon: '🏠' },
+    { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'event-plan', label: 'Event Plan', icon: '📅' },
     { id: 'registrations', label: 'Registrations', icon: '📝' },
     { id: 'approve-events', label: 'Approve Events', icon: '✅' },
@@ -644,8 +645,8 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Mobile Header Topbar */}
-      {isSidebarOpen && <div className="modal-overlay" style={{ zIndex: 9 }} onClick={() => setIsSidebarOpen(false)}></div>}
+      {/* Sidebar backdrop */}
+      {isSidebarOpen && <div className="sidebar-backdrop" onClick={() => setIsSidebarOpen(false)} />}
 
       {/* Sidebar Navigation */}
       <aside className={`dashboard-sidebar ${isSidebarOpen ? 'open' : ''}`}>
@@ -694,11 +695,18 @@ export default function Dashboard() {
         {/* Topbar Welcome / Burger toggler */}
         <div className="dashboard-topbar">
           <div className="welcome-section">
-            <button className="mobile-menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-              ☰
+            <button
+              className="mobile-menu-toggle"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+              aria-expanded={isSidebarOpen}
+            >
+              {isSidebarOpen ? '✕' : '☰'}
             </button>
-            <h1>Welcome, {user.name}!</h1>
-            <p>Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            <div className="welcome-text">
+              <h1>Welcome, {user.name}!</h1>
+              <p>Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <span className="profile-role-badge">{user.role}</span>
@@ -728,22 +736,24 @@ export default function Dashboard() {
                 {/* 1. Student Home Tab */}
                 {currentTab === 'home' && (
                   <div>
-                    <div className="dashboard-summary-banner">
+                    {/* 1. Build Skills & Connect with Campus on the top below the welcome */}
+                    <div className="dashboard-summary-banner" style={{ marginTop: '10px', marginBottom: '24px' }}>
                       <div className="banner-text">
                         <h2>Build Skills & Connect with Campus</h2>
                         <p>Explore technical events, hands-on workshops, and competitions. Register to participate, log attendance with QR codes, and download verified certificates.</p>
                       </div>
                     </div>
 
-                    <div className="stats-grid">
-                      <div className="stat-card">
+                    {/* 2. Overview (stats-grid) made a little bigger using stat-card-lg */}
+                    <div className="stats-grid" style={{ marginBottom: '32px' }}>
+                      <div className="stat-card stat-card-lg">
                         <div className="stat-icon">📝</div>
                         <div className="stat-info">
                           <span className="stat-value">{registeredEventIds.length}</span>
                           <span className="stat-label">Registered Events</span>
                         </div>
                       </div>
-                      <div className="stat-card">
+                      <div className="stat-card stat-card-lg">
                         <div className="stat-icon">✅</div>
                         <div className="stat-info">
                           <span className="stat-value">
@@ -752,7 +762,7 @@ export default function Dashboard() {
                           <span className="stat-label">Attended Events</span>
                         </div>
                       </div>
-                      <div className="stat-card">
+                      <div className="stat-card stat-card-lg">
                         <div className="stat-icon">🏆</div>
                         <div className="stat-info">
                           <span className="stat-value">
@@ -763,11 +773,9 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="section-header">
-                      <h3>Upcoming Recommended Events</h3>
-                      <button onClick={() => setCurrentTab('browse-events')} className="dash-btn dash-btn-outline" style={{ width: 'auto', padding: '6px 16px' }}>
-                        Browse All
-                      </button>
+                    {/* 3. Upcoming Recommended Events below overview */}
+                    <div className="section-header" style={{ marginBottom: '16px' }}>
+                      <h3 style={{ margin: 0 }}>Upcoming Recommended Events</h3>
                     </div>
 
                     <div className="event-grid">
@@ -812,65 +820,218 @@ export default function Dashboard() {
                         );
                       })}
                     </div>
+
+                    {/* Button for Upcoming Events at the bottom-right of this section */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', marginBottom: '32px' }}>
+                      <button 
+                        onClick={() => setCurrentTab('browse-events')} 
+                        className="dash-btn dash-btn-outline" 
+                        style={{ width: '90px', padding: '4px 10px', fontSize: '11px' }}
+                      >
+                        Browse All
+                      </button>
+                    </div>
+
+                    {/* Separately: My Registrations and Announcements down the overview */}
+                    <div className="home-split-grid">
+                      {/* Left: My Registrations */}
+                      <div className="home-column-section" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+                        <div>
+                          <div className="section-header" style={{ marginBottom: '16px' }}>
+                            <h3 style={{ margin: 0 }}>My Registrations</h3>
+                          </div>
+                          <div className="dash-table-container">
+                            <table className="dash-table">
+                              <thead>
+                                <tr>
+                                  <th>Event</th>
+                                  <th>Date</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {registrations.filter(r => r.studentId === user._id).slice().reverse().slice(0, 3).map((reg) => (
+                                  <tr key={reg.id}>
+                                    <td style={{ fontWeight: 'bold' }}>{reg.eventTitle}</td>
+                                    <td>
+                                      {formatDate(events.find(e => e._id === reg.eventId)?.date)}
+                                    </td>
+                                    <td>
+                                      <span className={`badge ${
+                                        reg.status === 'Approved' ? 'badge-success' :
+                                        reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                      }`}>
+                                        {reg.status}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                                {registrations.filter(r => r.studentId === user._id).length === 0 && (
+                                  <tr>
+                                    <td colSpan="3" style={{ textAlign: 'center', padding: '20px', color: 'var(--dash-text-muted)' }}>
+                                      No registered events yet.
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        {/* Button for Registrations at the bottom-right of this section */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                          <button 
+                            onClick={() => setCurrentTab('registrations')} 
+                            className="dash-btn dash-btn-outline" 
+                            style={{ width: '80px', padding: '4px 10px', fontSize: '11px' }}
+                          >
+                            View All
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Right: Latest Announcements */}
+                      <div className="home-column-section" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+                        <div>
+                          <div className="section-header" style={{ marginBottom: '16px' }}>
+                            <h3 style={{ margin: 0 }}>Latest Announcements</h3>
+                          </div>
+                          <div className="home-announcements-list">
+                            {announcements.slice().reverse().slice(0, 3).map((ann) => (
+                              <div key={ann.id} className="announcement-card" style={{ marginBottom: '12px', padding: '16px' }}>
+                                <div className="announcement-header">
+                                  <span className="announcement-title" style={{ fontSize: '14px' }}>{ann.title}</span>
+                                  <span className="announcement-date">{formatDate(ann.date)}</span>
+                                </div>
+                                <p className="announcement-body" style={{ fontSize: '12.5px', margin: '6px 0 0 0' }}>{ann.body}</p>
+                                <div className="announcement-author" style={{ fontSize: '10px', marginTop: '6px' }}>By: {ann.author}</div>
+                              </div>
+                            ))}
+                            {announcements.length === 0 && (
+                              <div style={{ textAlign: 'center', padding: '30px', color: 'var(--dash-text-muted)', background: 'var(--dash-card-bg)', border: '1px dashed var(--dash-border)', borderRadius: '12px' }}>
+                                No announcements yet.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {/* Button for Announcements at the bottom-right of this section */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                          <button 
+                            onClick={() => setCurrentTab('announcements')} 
+                            className="dash-btn dash-btn-outline" 
+                            style={{ width: '80px', padding: '4px 10px', fontSize: '11px' }}
+                          >
+                            View All
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {/* 2. Student Browse Events Tab */}
-                {currentTab === 'browse-events' && (
-                  <div>
-                    <div className="section-header">
-                      <h3>Explore Campus Events</h3>
-                    </div>
+                {currentTab === 'browse-events' && (() => {
+                  const upcomingEvents = events.filter(e => new Date(e.date) >= new Date());
+                  const closedEvents   = events.filter(e => new Date(e.date) <  new Date());
+                  const filteredEvents =
+                    browseFilter === 'upcoming' ? upcomingEvents :
+                    browseFilter === 'closed'   ? closedEvents   : events;
 
-                    <div className="event-grid" style={{ marginTop: '20px' }}>
-                      {events.map((event) => {
-                        const isRegistered = registeredEventIds.includes(event._id);
-                        const isPast = new Date(event.date) < new Date();
-                        return (
-                          <div key={event._id} className="dash-event-card">
-                            <div className="event-card-header" style={{ background: isPast ? 'linear-gradient(135deg, rgba(80, 80, 80, 0.4) 0%, rgba(20, 20, 20, 0.9) 100%)' : '' }}>
-                              <span className="event-card-club">{event.clubName || 'College Club'}</span>
-                              {isPast && <span className="event-card-tag" style={{ background: '#555', color: '#ccc', right: '16px', position: 'absolute' }}>Closed</span>}
-                            </div>
-                            <div className="event-card-content">
-                              <h4 className="event-card-title">{event.title}</h4>
-                              <p className="event-card-desc">{event.description}</p>
-                              <div className="event-card-info-row">
-                                <div className="event-card-info-item">
-                                  <span>📅</span> {formatDate(event.date)}
-                                </div>
-                                <div className="event-card-info-item">
-                                  <span>📍</span> {event.location}
-                                </div>
-                                <div className="event-card-info-item">
-                                  <span>👥</span> Capacity: {event.capacity} seats
-                                </div>
-                              </div>
-                              <div className="event-card-action-row">
-                                <button
-                                  onClick={() => {
-                                    setSelectedEvent(event);
-                                    setIsEventDetailModalOpen(true);
+                  return (
+                    <div>
+                      {/* Header + Filter Tabs */}
+                      <div className="section-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                        <h3>Explore Campus Events</h3>
+                        <div className="filter-tabs">
+                          <button
+                            className={`filter-btn ${browseFilter === 'all' ? 'active' : ''}`}
+                            onClick={() => setBrowseFilter('all')}
+                          >
+                            All&nbsp;<span style={{ opacity: 0.7 }}>({events.length})</span>
+                          </button>
+                          <button
+                            className={`filter-btn ${browseFilter === 'upcoming' ? 'active' : ''}`}
+                            onClick={() => setBrowseFilter('upcoming')}
+                          >
+                            🟢 Upcoming&nbsp;<span style={{ opacity: 0.7 }}>({upcomingEvents.length})</span>
+                          </button>
+                          <button
+                            className={`filter-btn ${browseFilter === 'closed' ? 'active' : ''}`}
+                            onClick={() => setBrowseFilter('closed')}
+                          >
+                            🔴 Closed&nbsp;<span style={{ opacity: 0.7 }}>({closedEvents.length})</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Event Cards */}
+                      {filteredEvents.length === 0 ? (
+                        <div style={{
+                          textAlign: 'center', padding: '60px 20px',
+                          color: 'var(--dash-text-muted)', fontSize: '15px'
+                        }}>
+                          {browseFilter === 'upcoming' ? '🗓️ No upcoming events at the moment. Check back soon!' :
+                           browseFilter === 'closed'   ? '📁 No closed events found.' :
+                           '📭 No events available.'}
+                        </div>
+                      ) : (
+                        <div className="event-grid" style={{ marginTop: '20px' }}>
+                          {filteredEvents.map((event) => {
+                            const isRegistered = registeredEventIds.includes(event._id);
+                            const isPast = new Date(event.date) < new Date();
+                            return (
+                              <div key={event._id} className="dash-event-card">
+                                <div
+                                  className="event-card-header"
+                                  style={{
+                                    background: isPast
+                                      ? 'linear-gradient(135deg, rgba(80,80,80,0.4) 0%, rgba(20,20,20,0.9) 100%)'
+                                      : 'linear-gradient(135deg, rgba(91,184,37,0.3) 0%, rgba(20,29,34,0.9) 100%)'
                                   }}
-                                  className="dash-btn dash-btn-secondary"
                                 >
-                                  Read Details
-                                </button>
-                                <button
-                                  disabled={isRegistered || isPast}
-                                  onClick={() => handleRegisterEvent(event)}
-                                  className="dash-btn dash-btn-primary"
-                                >
-                                  {isPast ? 'Closed' : isRegistered ? 'Registered ✓' : 'Register Now'}
-                                </button>
+                                  <span className="event-card-club">{event.clubName || 'College Club'}</span>
+                                  <span
+                                    className="event-card-tag"
+                                    style={isPast
+                                      ? { background: '#444', color: '#aaa' }
+                                      : { background: 'var(--brand-green-light)', color: 'var(--brand-text-green)' }
+                                    }
+                                  >
+                                    {isPast ? '🔴 Closed' : '🟢 Upcoming'}
+                                  </span>
+                                </div>
+
+                                <div className="event-card-content">
+                                  <h4 className="event-card-title">{event.title}</h4>
+                                  <p className="event-card-desc">{event.description}</p>
+                                  <div className="event-card-info-row">
+                                    <div className="event-card-info-item"><span>📅</span> {formatDate(event.date)}</div>
+                                    <div className="event-card-info-item"><span>📍</span> {event.location}</div>
+                                    <div className="event-card-info-item"><span>👥</span> Capacity: {event.capacity} seats</div>
+                                  </div>
+                                  <div className="event-card-action-row">
+                                    <button
+                                      onClick={() => { setSelectedEvent(event); setIsEventDetailModalOpen(true); }}
+                                      className="dash-btn dash-btn-secondary"
+                                    >
+                                      Details
+                                    </button>
+                                    <button
+                                      disabled={isRegistered || isPast}
+                                      onClick={() => handleRegisterEvent(event)}
+                                      className="dash-btn dash-btn-primary"
+                                    >
+                                      {isPast ? 'Closed' : isRegistered ? '✓ Registered' : 'Register Now'}
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* 3. Student My Registrations Tab */}
                 {currentTab === 'registrations' && (
