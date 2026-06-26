@@ -50,10 +50,7 @@ const userSchema = new mongoose.Schema(
     },
     isApproved: {
       type: Boolean,
-      default: function() {
-        if (this.role === 'organizer') return false;
-        return true;
-      },
+      default: true,
     },
     resetPasswordOtp: {
       type: String,

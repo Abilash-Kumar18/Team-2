@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const path = require('path');
 const rateLimit = require('express-rate-limit');
 const connectDB = async () => {
   try {
@@ -19,7 +20,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
 
 // Load environment variables if package installed
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
   console.error('FATAL ERROR: JWT_SECRET environment variable is not defined!');
@@ -31,13 +32,20 @@ connectDB();
 const app = express();
 
 app.use(helmet());
-const allowedOrigins = ['http://localhost:5173', 'https://team-2-frontend-pink.vercel.app'];
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
 
+// Dynamic CORS configuration to allow all localhost ports during development
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (
+      origin.startsWith('http://localhost:') || 
+      origin.startsWith('http://127.0.0.1:') || 
+      origin === 'https://team-2-frontend-pink.vercel.app'
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());
