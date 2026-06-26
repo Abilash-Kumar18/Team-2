@@ -1386,29 +1386,27 @@ export default function Dashboard() {
 
                     <div className="dash-table-container" style={{ padding: '30px' }}>
                       <form onSubmit={handleCreateEvent} className="dash-form">
-                        <div className="form-row">
-                          <div className="dash-form-group">
-                            <label>Event Title</label>
-                            <input
-                              type="text"
-                              value={eventForm.title}
-                              onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                              className="dash-input"
-                              placeholder="Enter event name (e.g. Codeathon 2026)"
-                              required
-                            />
-                          </div>
-                          <div className="dash-form-group">
-                            <label>Organizing Club</label>
-                            <input
-                              type="text"
-                              value={eventForm.clubName}
-                              onChange={(e) => setEventForm({ ...eventForm, clubName: e.target.value })}
-                              className="dash-input"
-                              placeholder="e.g. Coding Club"
-                              required
-                            />
-                          </div>
+                        <div className="dash-form-group">
+                          <label>Event Title</label>
+                          <input
+                            type="text"
+                            value={eventForm.title}
+                            onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                            className="dash-input"
+                            placeholder="Enter event name (e.g. Codeathon 2026)"
+                            required
+                          />
+                        </div>
+                        <div className="dash-form-group">
+                          <label>Organizing Club</label>
+                          <input
+                            type="text"
+                            value={eventForm.clubName}
+                            onChange={(e) => setEventForm({ ...eventForm, clubName: e.target.value })}
+                            className="dash-input"
+                            placeholder="e.g. Coding Club"
+                            required
+                          />
                         </div>
 
                         <div className="dash-form-group">
@@ -1422,40 +1420,39 @@ export default function Dashboard() {
                           ></textarea>
                         </div>
 
-                        <div className="form-row">
-                          <div className="dash-form-group">
-                            <label>Scheduled Date & Time</label>
-                            <input
-                              type="datetime-local"
-                              value={eventForm.date}
-                              onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                              className="dash-input"
-                              required
-                            />
-                          </div>
-                          <div className="dash-form-group">
-                            <label>Venue Location</label>
-                            <input
-                              type="text"
-                              value={eventForm.location}
-                              onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                              className="dash-input"
-                              placeholder="e.g. Main Auditorium"
-                              required
-                            />
-                          </div>
-                          <div className="dash-form-group">
-                            <label>Capacity Limit (Attendees)</label>
-                            <input
-                              type="number"
-                              value={eventForm.capacity}
-                              onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
-                              className="dash-input"
-                              min="10"
-                              required
-                            />
-                          </div>
+                        <div className="dash-form-group">
+                          <label>Scheduled Date & Time</label>
+                          <input
+                            type="datetime-local"
+                            value={eventForm.date}
+                            onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                            className="dash-input"
+                            required
+                          />
                         </div>
+                        <div className="dash-form-group">
+                          <label>Venue Location</label>
+                          <input
+                            type="text"
+                            value={eventForm.location}
+                            onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                            className="dash-input"
+                            placeholder="e.g. Main Auditorium"
+                            required
+                          />
+                        </div>
+                        <div className="dash-form-group">
+                          <label>Capacity Limit (Attendees)</label>
+                          <input
+                            type="number"
+                            value={eventForm.capacity}
+                            onChange={(e) => setEventForm({ ...eventForm, capacity: e.target.value })}
+                            className="dash-input"
+                            min="10"
+                            required
+                          />
+                        </div>
+
 
                         <div style={{ display: 'flex', gap: '16px', marginTop: '10px' }}>
                           <button type="submit" className="dash-btn dash-btn-primary">
@@ -2106,30 +2103,29 @@ export default function Dashboard() {
                       required
                     />
                   </div>
-                  <div className="form-row">
-                    <div className="dash-form-group">
-                      <label>Department</label>
-                      <input
-                        type="text"
-                        value={staffForm.dept}
-                        onChange={(e) => setStaffForm({ ...staffForm, dept: e.target.value })}
-                        className="dash-input"
-                        placeholder="e.g. CSE"
-                        required
-                      />
-                    </div>
-                    <div className="dash-form-group">
-                      <label>System Role</label>
-                      <input
-                        type="text"
-                        value={staffForm.role}
-                        onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value })}
-                        className="dash-input"
-                        placeholder="e.g. Coordinator / Volunteer"
-                        required
-                      />
-                    </div>
+                  <div className="dash-form-group">
+                    <label>Department</label>
+                    <input
+                      type="text"
+                      value={staffForm.dept}
+                      onChange={(e) => setStaffForm({ ...staffForm, dept: e.target.value })}
+                      className="dash-input"
+                      placeholder="e.g. CSE"
+                      required
+                    />
                   </div>
+                  <div className="dash-form-group">
+                    <label>System Role</label>
+                    <input
+                      type="text"
+                      value={staffForm.role}
+                      onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value })}
+                      className="dash-input"
+                      placeholder="e.g. Coordinator / Volunteer"
+                      required
+                    />
+                  </div>
+
                   <div className="dash-form-group">
                     <label>Email ID</label>
                     <input
@@ -2167,30 +2163,29 @@ export default function Dashboard() {
               </div>
               <div className="modal-body">
                 <div className="dash-form">
-                  <div className="form-row">
-                    <div className="dash-form-group">
-                      <label>Club Name</label>
-                      <input
-                        type="text"
-                        value={clubForm.name}
-                        onChange={(e) => setClubForm({ ...clubForm, name: e.target.value })}
-                        className="dash-input"
-                        placeholder="e.g. Fine Arts Club"
-                        required
-                      />
-                    </div>
-                    <div className="dash-form-group">
-                      <label>Department Scope</label>
-                      <input
-                        type="text"
-                        value={clubForm.dept}
-                        onChange={(e) => setClubForm({ ...clubForm, dept: e.target.value })}
-                        className="dash-input"
-                        placeholder="e.g. ECE / MECH"
-                        required
-                      />
-                    </div>
+                  <div className="dash-form-group">
+                    <label>Club Name</label>
+                    <input
+                      type="text"
+                      value={clubForm.name}
+                      onChange={(e) => setClubForm({ ...clubForm, name: e.target.value })}
+                      className="dash-input"
+                      placeholder="e.g. Fine Arts Club"
+                      required
+                    />
                   </div>
+                  <div className="dash-form-group">
+                    <label>Department Scope</label>
+                    <input
+                      type="text"
+                      value={clubForm.dept}
+                      onChange={(e) => setClubForm({ ...clubForm, dept: e.target.value })}
+                      className="dash-input"
+                      placeholder="e.g. ECE / MECH"
+                      required
+                    />
+                  </div>
+
                   <div className="dash-form-group">
                     <label>President Name</label>
                     <input
