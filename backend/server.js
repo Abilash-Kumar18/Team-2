@@ -17,6 +17,13 @@ const scanRoutes = require('./routes/scanRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const registrationRoutes = require('./routes/registrationRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const userRoutes = require('./routes/userRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 
 // Load environment variables if package installed
 require('dotenv').config();
@@ -59,6 +66,14 @@ app.use('/api/scan', scanRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/faculty', facultyRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/registrations', registrationRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/profile', userRoutes);
+app.use('/api/student', studentRoutes);
 
 app.get('/', (req, res) => {
   res.send('Event Management API is running...');

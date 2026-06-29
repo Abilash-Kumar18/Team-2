@@ -44,7 +44,7 @@ frontend/node_modules/
 dist/
 dist-ssr/
 build/
-
+.antigravityignore
 # -----------------------------
 # Environment Variables
 # -----------------------------
