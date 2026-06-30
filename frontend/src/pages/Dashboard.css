@@ -1158,3 +1158,114 @@
 .stat-card-lg .stat-label {
   font-size: 13px;
 }
+
+/* ========== FACULTY DASHBOARD STYLES ========== */
+
+.faculty-summary-banner {
+  background: linear-gradient(135deg, rgba(96, 150, 186, 0.2) 0%, rgba(20, 32, 25, 0.9) 100%);
+  border: 1px solid rgba(96, 150, 186, 0.3);
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.faculty-summary-banner::before {
+  content: "";
+  position: absolute;
+  right: -100px;
+  top: -50px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(96, 150, 186, 0.1) 0%, transparent 70%);
+}
+
+.faculty-stat-card {
+  background-color: rgba(96, 150, 186, 0.1);
+  border: 1px solid rgba(96, 150, 186, 0.3);
+  transition: all 0.2s ease;
+}
+
+.faculty-stat-card:hover {
+  background-color: rgba(96, 150, 186, 0.15);
+  border-color: rgba(96, 150, 186, 0.5);
+  transform: translateY(-2px);
+}
+
+.faculty-stat-card .stat-icon {
+  background-color: rgba(96, 150, 186, 0.2);
+  color: #6096BA;
+}
+
+.faculty-stat-card .stat-value {
+  color: #fff;
+}
+
+.faculty-stat-card .stat-label {
+  color: var(--dash-text-muted);
+}
+
+/* Faculty-specific button styles */
+.faculty-btn-primary {
+  background: linear-gradient(135deg, #6096BA 0%, #487aa1 100%);
+  color: #fff;
+}
+
+.faculty-btn-primary:hover {
+  background: linear-gradient(135deg, #6ba6d6 0%, #5a8fb5 100%);
+  box-shadow: 0 4px 12px rgba(96, 150, 186, 0.25);
+}
+
+/* Faculty event cards with teal accent */
+.faculty-event-card {
+  border-left: 4px solid #6096BA;
+}
+
+.faculty-event-card:hover {
+  border-color: #7aa8d9;
+}
+
+/* QR Scanner styling for Faculty */
+.qr-scanner-camera-feed {
+  background: linear-gradient(135deg, rgba(96, 150, 186, 0.05) 0%, rgba(20, 29, 34, 0.95) 100%);
+  border: 2px solid rgba(96, 150, 186, 0.3);
+}
+
+.scanner-laser {
+  background-color: #6096BA;
+  box-shadow: 0 0 10px #6096BA;
+}
+
+/* Faculty table styling */
+.faculty-table-row:hover {
+  background-color: rgba(96, 150, 186, 0.05);
+}
+
+/* Announcement card styling for Faculty */
+.faculty-announcement-card {
+  border-left: 4px solid #6096BA;
+  background-color: rgba(96, 150, 186, 0.05);
+}
+
+/* Badge colors for faculty status */
+.badge-faculty-pending {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-faculty-approved {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-faculty-rejected {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}

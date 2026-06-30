@@ -641,7 +641,19 @@ export default function Dashboard() {
     { id: 'profile', label: 'My Profile', icon: '👤' }
   ];
 
-  const tabsToRender = isStudent ? studentTabs : organizerTabs;
+  const facultyTabs = [
+    { id: 'home', label: 'Home', icon: '🏠' },
+    { id: 'faculty-events', label: 'Event Page', icon: '📅' },
+    { id: 'faculty-registrations', label: 'Student Registrations', icon: '👨‍🎓' },
+    { id: 'faculty-approve', label: 'Approve Events', icon: '✅' },
+    { id: 'faculty-announcements', label: 'Announcements', icon: '📢' },
+    { id: 'faculty-attendance', label: 'Attendance', icon: '📋' },
+    { id: 'faculty-reports', label: 'Reports', icon: '📊' },
+    { id: 'profile', label: 'My Profile', icon: '👤' }
+  ];
+
+  const isFaculty = user.role === 'faculty';
+  const tabsToRender = isStudent ? studentTabs : isFaculty ? facultyTabs : organizerTabs;
 
   return (
     <div className="dashboard-container">
@@ -1954,6 +1966,613 @@ export default function Dashboard() {
                             <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Seeded Staff Coordinators</span>
                             <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>{staff.length}</h4>
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* -------------------- FACULTY DASHBOARD FLOWS -------------------- */}
+            {isFaculty && (
+              <>
+                {/* 1. Faculty Home Tab */}
+                {currentTab === 'home' && (
+                  <div>
+                    <div className="faculty-summary-banner">
+                      <div className="banner-text">
+                        <h2>Faculty Event Management Dashboard</h2>
+                        <p>Oversee student participation, approve event proposals, monitor attendance, and generate comprehensive reports.</p>
+                      </div>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="stats-grid">
+                      <div className="stat-card faculty-stat-card">
+                        <div className="stat-icon">📅</div>
+                        <div className="stat-info">
+                          <span className="stat-value">{events.length}</span>
+                          <span className="stat-label">Active Events</span>
+                        </div>
+                      </div>
+                      <div className="stat-card faculty-stat-card">
+                        <div className="stat-icon">👥</div>
+                        <div className="stat-info">
+                          <span className="stat-value">{registrations.length}</span>
+                          <span className="stat-label">Total Registrations</span>
+                        </div>
+                      </div>
+                      <div className="stat-card faculty-stat-card">
+                        <div className="stat-icon">⏳</div>
+                        <div className="stat-info">
+                          <span className="stat-value">
+                            {registrations.filter(r => r.status === 'Pending').length}
+                          </span>
+                          <span className="stat-label">Pending Approvals</span>
+                        </div>
+                      </div>
+                      <div className="stat-card faculty-stat-card">
+                        <div className="stat-icon">✅</div>
+                        <div className="stat-info">
+                          <span className="stat-value">
+                            {registrations.filter(r => r.checkedIn).length}
+                          </span>
+                          <span className="stat-label">Checked In</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pending Approvals Card */}
+                    <div className="section-header" style={{ marginTop: '32px', marginBottom: '20px' }}>
+                      <h3>Pending Event Approvals</h3>
+                    </div>
+
+                    <div className="dash-table-container">
+                      <table className="dash-table">
+                        <thead>
+                          <tr>
+                            <th>Event Name</th>
+                            <th>Club</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {events.slice(0, 3).map((event) => (
+                            <tr key={event._id}>
+                              <td style={{ fontWeight: 'bold' }}>{event.title}</td>
+                              <td>{event.clubName}</td>
+                              <td>{formatDate(event.date)}</td>
+                              <td>
+                                <span className="badge badge-warning">Pending Review</span>
+                              </td>
+                              <td>
+                                <button
+                                  onClick={() => setCurrentTab('faculty-approve')}
+                                  className="dash-btn dash-btn-outline"
+                                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                                >
+                                  Review
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          {events.length === 0 && (
+                            <tr>
+                              <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: 'var(--dash-text-muted)' }}>
+                                No pending approvals.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <div className="section-header" style={{ marginTop: '32px', marginBottom: '20px' }}>
+                      <h3>Recent Activity</h3>
+                    </div>
+
+                    <div className="home-announcements-list">
+                      {announcements.slice().reverse().slice(0, 4).map((ann) => (
+                        <div key={ann.id} className="announcement-card" style={{ marginBottom: '12px' }}>
+                          <div className="announcement-header">
+                            <span className="announcement-title" style={{ fontSize: '14px' }}>{ann.title}</span>
+                            <span className="announcement-date">{formatDate(ann.date)}</span>
+                          </div>
+                          <p className="announcement-body" style={{ fontSize: '12.5px', margin: '6px 0 0 0' }}>{ann.body}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Faculty Event Page Tab */}
+                {currentTab === 'faculty-events' && (() => {
+                  const upcomingEvents = events.filter(e => new Date(e.date) >= new Date());
+                  const closedEvents = events.filter(e => new Date(e.date) < new Date());
+                  const filteredEvents =
+                    browseFilter === 'upcoming' ? upcomingEvents :
+                    browseFilter === 'closed' ? closedEvents : events;
+
+                  return (
+                    <div>
+                      <div className="section-header" style={{ flexWrap: 'wrap', gap: '12px' }}>
+                        <h3>College Events</h3>
+                        <div className="filter-tabs">
+                          <button
+                            className={`filter-btn ${browseFilter === 'all' ? 'active' : ''}`}
+                            onClick={() => setBrowseFilter('all')}
+                          >
+                            All ({events.length})
+                          </button>
+                          <button
+                            className={`filter-btn ${browseFilter === 'upcoming' ? 'active' : ''}`}
+                            onClick={() => setBrowseFilter('upcoming')}
+                          >
+                            🟢 Upcoming ({upcomingEvents.length})
+                          </button>
+                          <button
+                            className={`filter-btn ${browseFilter === 'closed' ? 'active' : ''}`}
+                            onClick={() => setBrowseFilter('closed')}
+                          >
+                            🔴 Closed ({closedEvents.length})
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="event-grid" style={{ marginTop: '20px' }}>
+                        {filteredEvents.map((event) => {
+                          const isPast = new Date(event.date) < new Date();
+                          const eventRegs = registrations.filter(r => r.eventId === event._id);
+                          return (
+                            <div key={event._id} className="dash-event-card">
+                              <div
+                                className="event-card-header"
+                                style={{
+                                  background: isPast
+                                    ? 'linear-gradient(135deg, rgba(80,80,80,0.4) 0%, rgba(20,20,20,0.9) 100%)'
+                                    : 'linear-gradient(135deg, rgba(96,150,186,0.3) 0%, rgba(20,29,34,0.9) 100%)'
+                                }}
+                              >
+                                <span className="event-card-club">{event.clubName}</span>
+                              </div>
+
+                              <div className="event-card-content">
+                                <h4 className="event-card-title">{event.title}</h4>
+                                <p className="event-card-desc">{event.description}</p>
+                                <div className="event-card-info-row">
+                                  <div className="event-card-info-item"><span>📅</span> {formatDate(event.date)}</div>
+                                  <div className="event-card-info-item"><span>📍</span> {event.location}</div>
+                                  <div className="event-card-info-item"><span>👥</span> {eventRegs.length} registered</div>
+                                </div>
+                                <div className="event-card-action-row">
+                                  <button
+                                    onClick={() => { setSelectedEvent(event); setIsEventDetailModalOpen(true); }}
+                                    className="dash-btn dash-btn-secondary"
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 3. Faculty Student Registrations Tab */}
+                {currentTab === 'faculty-registrations' && (
+                  <div>
+                    <div className="section-header">
+                      <h3>Student Event Registrations</h3>
+                    </div>
+
+                    <div className="dash-table-container" style={{ marginBottom: '20px', padding: '16px' }}>
+                      <div className="dash-form-group" style={{ maxWidth: '400px' }}>
+                        <label>Filter by Event</label>
+                        <select
+                          value={qrScanEventId}
+                          onChange={(e) => setQrScanEventId(e.target.value)}
+                          className="dash-select"
+                        >
+                          <option value="">-- All Events --</option>
+                          {events.map(ev => (
+                            <option key={ev._id} value={ev._id}>{ev.title}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Stats for selected event */}
+                    {qrScanEventId && (
+                      <div className="stats-grid" style={{ marginBottom: '24px' }}>
+                        <div className="stat-card faculty-stat-card">
+                          <div className="stat-icon">📝</div>
+                          <div className="stat-info">
+                            <span className="stat-value">{registrations.filter(r => r.eventId === qrScanEventId).length}</span>
+                            <span className="stat-label">Total Registered</span>
+                          </div>
+                        </div>
+                        <div className="stat-card faculty-stat-card">
+                          <div className="stat-icon">✅</div>
+                          <div className="stat-info">
+                            <span className="stat-value">
+                              {registrations.filter(r => r.eventId === qrScanEventId && r.checkedIn).length}
+                            </span>
+                            <span className="stat-label">Attended</span>
+                          </div>
+                        </div>
+                        <div className="stat-card faculty-stat-card">
+                          <div className="stat-icon">⏳</div>
+                          <div className="stat-info">
+                            <span className="stat-value">
+                              {registrations.filter(r => r.eventId === qrScanEventId && r.status === 'Pending').length}
+                            </span>
+                            <span className="stat-label">Pending Approval</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="dash-table-container">
+                      <table className="dash-table">
+                        <thead>
+                          <tr>
+                            <th>Student Name</th>
+                            <th>Reg. Number</th>
+                            <th>Email</th>
+                            <th>Event</th>
+                            <th>Status</th>
+                            <th>Attended</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(qrScanEventId
+                            ? registrations.filter(r => r.eventId === qrScanEventId)
+                            : registrations).map((reg) => (
+                            <tr key={reg.id}>
+                              <td style={{ fontWeight: 'bold' }}>{reg.studentName}</td>
+                              <td>{reg.studentReg}</td>
+                              <td>{reg.studentEmail}</td>
+                              <td>{reg.eventTitle}</td>
+                              <td>
+                                <span className={`badge ${
+                                  reg.status === 'Approved' ? 'badge-success' :
+                                  reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                }`}>
+                                  {reg.status}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`badge ${reg.checkedIn ? 'badge-success' : 'badge-warning'}`}>
+                                  {reg.checkedIn ? 'Yes ✓' : 'No'}
+                                </span>
+                              </td>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  checked={reg.checkedIn}
+                                  onChange={() => handleToggleAttendanceCheck(reg.id)}
+                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                  title="Mark attendance"
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                          {registrations.length === 0 && (
+                            <tr>
+                              <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: 'var(--dash-text-muted)' }}>
+                                No student registrations found.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Faculty Approve Events Tab */}
+                {currentTab === 'faculty-approve' && (
+                  <div>
+                    <div className="section-header">
+                      <h3>Event Approval Panel</h3>
+                    </div>
+
+                    <div className="filter-tabs" style={{ marginBottom: '20px' }}>
+                      <button
+                        className={`filter-btn ${browseFilter === 'pending' ? 'active' : ''}`}
+                        onClick={() => setBrowseFilter('pending')}
+                      >
+                        ⏳ Pending
+                      </button>
+                      <button
+                        className={`filter-btn ${browseFilter === 'approved' ? 'active' : ''}`}
+                        onClick={() => setBrowseFilter('approved')}
+                      >
+                        ✅ Approved
+                      </button>
+                      <button
+                        className={`filter-btn ${browseFilter === 'rejected' ? 'active' : ''}`}
+                        onClick={() => setBrowseFilter('rejected')}
+                      >
+                        ❌ Rejected
+                      </button>
+                    </div>
+
+                    <div className="dash-table-container">
+                      <table className="dash-table">
+                        <thead>
+                          <tr>
+                            <th>Event Name</th>
+                            <th>Club</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th>Capacity</th>
+                            <th>Approval Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {events.map((event, idx) => {
+                            const statusToShow = browseFilter === 'pending' ? 'Pending Review' :
+                              browseFilter === 'approved' ? 'Approved' :
+                              browseFilter === 'rejected' ? 'Rejected' : 'Pending Review';
+                            // For demo, alternate statuses
+                            const demoStatus = idx % 3 === 0 ? 'Pending Review' : idx % 3 === 1 ? 'Approved' : 'Rejected';
+                            if (browseFilter !== 'all' && statusToShow !== demoStatus) return null;
+
+                            return (
+                              <tr key={event._id}>
+                                <td style={{ fontWeight: 'bold' }}>{event.title}</td>
+                                <td>{event.clubName}</td>
+                                <td>{formatDate(event.date)}</td>
+                                <td>{event.location}</td>
+                                <td>{event.capacity}</td>
+                                <td>
+                                  <span className={`badge ${
+                                    demoStatus === 'Approved' ? 'badge-success' :
+                                    demoStatus === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                  }`}>
+                                    {demoStatus}
+                                  </span>
+                                </td>
+                                <td style={{ display: 'flex', gap: '6px' }}>
+                                  {demoStatus === 'Pending Review' && (
+                                    <>
+                                      <button
+                                        onClick={() => setActionSuccess(`Approved: ${event.title}`)}
+                                        className="dash-btn dash-btn-primary"
+                                        style={{ padding: '4px 8px', fontSize: '10px', flex: 'none' }}
+                                      >
+                                        Approve
+                                      </button>
+                                      <button
+                                        onClick={() => setActionSuccess(`Rejected: ${event.title}`)}
+                                        className="dash-btn dash-btn-secondary"
+                                        style={{ padding: '4px 8px', fontSize: '10px', flex: 'none', color: '#ff6b6b' }}
+                                      >
+                                        Reject
+                                      </button>
+                                    </>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Faculty Announcements Tab */}
+                {currentTab === 'faculty-announcements' && (
+                  <div>
+                    <div className="section-header">
+                      <h3>Campus Announcements</h3>
+                      <button onClick={() => setIsCreateAnnouncementModalOpen(true)} className="dash-btn dash-btn-primary" style={{ width: 'auto' }}>
+                        + Create Announcement
+                      </button>
+                    </div>
+
+                    <div style={{ marginTop: '20px' }}>
+                      {announcements.map((ann) => (
+                        <div key={ann.id} className="announcement-card">
+                          <div className="announcement-header">
+                            <span className="announcement-title">{ann.title}</span>
+                            <span className="announcement-date">{formatDate(ann.date)}</span>
+                          </div>
+                          <p className="announcement-body">{ann.body}</p>
+                          <div className="announcement-author">Posted by: {ann.author}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. Faculty Attendance Tab */}
+                {currentTab === 'faculty-attendance' && (
+                  <div>
+                    <div className="section-header">
+                      <h3>QR Attendance Management</h3>
+                    </div>
+
+                    <div className="profile-layout">
+                      <div className="profile-card">
+                        <h3>QR Scanner</h3>
+                        <div className="qr-scanner-camera-feed" style={{ marginTop: '20px' }}>
+                          <div className="scanner-laser"></div>
+                          <span style={{ fontSize: '32px' }}>📷</span>
+                          <span className="viewfinder-text">Position QR code within grid...</span>
+                        </div>
+                      </div>
+
+                      <div className="dash-table-container" style={{ padding: '24px' }}>
+                        <h3 style={{ margin: '0 0 16px 0' }}>Mark Attendance</h3>
+                        
+                        <div className="dash-form">
+                          <div className="dash-form-group">
+                            <label>Select Event</label>
+                            <select
+                              value={qrScanEventId}
+                              onChange={(e) => setQrScanEventId(e.target.value)}
+                              className="dash-select"
+                            >
+                              <option value="">-- Choose Event --</option>
+                              {events.map(ev => (
+                                <option key={ev._id} value={ev._id}>{ev.title}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="dash-form-group">
+                            <label>Student Registration / Name</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <input
+                                type="text"
+                                value={qrScanStudentReg}
+                                onChange={(e) => setQrScanStudentReg(e.target.value)}
+                                className="dash-input"
+                                placeholder="Enter Reg. No or Student Name"
+                              />
+                              <button
+                                onClick={() => handleCheckInSimulate()}
+                                className="dash-btn dash-btn-primary"
+                                style={{ flex: 'none', width: 'auto' }}
+                              >
+                                Scan
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {qrScanResult && (
+                          <div className={qrScanResult.success ? 'scan-success' : 'scan-error'} style={{ marginTop: '20px', color: '#fff', padding: '12px', borderRadius: '8px' }}>
+                            <h4 style={{ margin: '0 0 6px 0' }}>{qrScanResult.success ? '✓ Check-in Successful' : '❌ Check-in Failed'}</h4>
+                            <p style={{ margin: 0, fontSize: '13px' }}>{qrScanResult.message}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 7. Faculty Reports Tab */}
+                {currentTab === 'faculty-reports' && (
+                  <div>
+                    <div className="section-header">
+                      <h3>Event Reports & Analytics</h3>
+                    </div>
+
+                    <div className="profile-layout">
+                      <div className="profile-card">
+                        <h3>Report Filters</h3>
+                        
+                        <div className="dash-form" style={{ marginTop: '16px' }}>
+                          <div className="dash-form-group">
+                            <label>Select Event</label>
+                            <select
+                              value={qrScanEventId}
+                              onChange={(e) => setQrScanEventId(e.target.value)}
+                              className="dash-select"
+                            >
+                              <option value="">-- All Events --</option>
+                              {events.map(ev => (
+                                <option key={ev._id} value={ev._id}>{ev.title}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+                            <button onClick={() => handleExportReport('xlsx')} className="dash-btn dash-btn-primary">
+                              📊 Export Excel
+                            </button>
+                            <button onClick={() => handleExportReport('pdf')} className="dash-btn dash-btn-outline">
+                              📄 Export PDF
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="dash-table-container" style={{ padding: '24px' }}>
+                        <h3>Report Metrics</h3>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
+                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Total Registrations</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                              {qrScanEventId
+                                ? registrations.filter(r => r.eventId === qrScanEventId).length
+                                : registrations.length
+                              }
+                            </h4>
+                          </div>
+                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
+                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Attendance Count</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                              {qrScanEventId
+                                ? registrations.filter(r => r.eventId === qrScanEventId && r.checkedIn).length
+                                : registrations.filter(r => r.checkedIn).length
+                              }
+                            </h4>
+                          </div>
+                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
+                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Attendance Rate</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                              {qrScanEventId
+                                ? registrations.filter(r => r.eventId === qrScanEventId).length > 0
+                                  ? Math.round((registrations.filter(r => r.eventId === qrScanEventId && r.checkedIn).length / registrations.filter(r => r.eventId === qrScanEventId).length) * 100)
+                                  : 0
+                                : registrations.length > 0
+                                ? Math.round((registrations.filter(r => r.checkedIn).length / registrations.length) * 100)
+                                : 0
+                              }%
+                            </h4>
+                          </div>
+                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
+                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Pending Approvals</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                              {registrations.filter(r => r.status === 'Pending').length}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div className="dash-table-container" style={{ marginTop: '24px', padding: '16px' }}>
+                          <h4 style={{ margin: '0 0 12px 0' }}>Event Details</h4>
+                          <table className="dash-table">
+                            <thead>
+                              <tr>
+                                <th>Event Name</th>
+                                <th>Date</th>
+                                <th>Total Regs</th>
+                                <th>Attended</th>
+                                <th>Attend %</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {events.map((event) => {
+                                const eventRegs = registrations.filter(r => r.eventId === event._id);
+                                const attended = eventRegs.filter(r => r.checkedIn).length;
+                                const rate = eventRegs.length > 0 ? Math.round((attended / eventRegs.length) * 100) : 0;
+                                return (
+                                  <tr key={event._id}>
+                                    <td style={{ fontWeight: 'bold' }}>{event.title}</td>
+                                    <td>{formatDate(event.date).split(' at')[0]}</td>
+                                    <td>{eventRegs.length}</td>
+                                    <td>{attended}</td>
+                                    <td>{rate}%</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
