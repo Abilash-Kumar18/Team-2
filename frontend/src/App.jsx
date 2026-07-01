@@ -9,6 +9,7 @@ import Verification from './pages/Verification';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import EventRegister from './pages/EventRegister';
 
 import Home from './pages/Home';
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/register" element={<EventRegister />} />
       </Routes>
     </Router>
   );

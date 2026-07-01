@@ -514,8 +514,11 @@
   margin-top: auto;
 }
 
-.dash-btn {
+.event-card-action-row .dash-btn {
   flex: 1;
+}
+
+.dash-btn {
   padding: 10px 16px;
   border-radius: 8px;
   font-size: 13px;

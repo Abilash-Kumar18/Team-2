@@ -1,0 +1,353 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { authService } from '../services/api';
+import './EventRegister.css';
+
+export default function EventRegister() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const eventId = searchParams.get('eventId');
+
+  const [user, setUser] = useState(null);
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  // Form fields
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    regNo: '',
+    department: '',
+    year: '',
+    reason: '',
+    agreeTerms: false
+  });
+
+  useEffect(() => {
+    // Load user
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (!token || !storedUser) {
+      navigate('/login');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+      setForm(prev => ({
+        ...prev,
+        fullName: parsed.name || '',
+        email: parsed.email || '',
+        regNo: parsed.regNo || ''
+      }));
+    } catch {
+      navigate('/login');
+      return;
+    }
+
+    // Load event details
+    if (!eventId) {
+      setError('No event specified.');
+      setLoading(false);
+      return;
+    }
+
+    // Try to find from localStorage custom events or default events
+    let allEvents = [];
+    const storedCustomEvents = localStorage.getItem('dash_custom_events');
+    if (storedCustomEvents) {
+      try { allEvents = JSON.parse(storedCustomEvents); } catch { }
+    }
+    // Also check default mock events
+    const defaultEvents = [
+      { _id: 'mock_event_1', title: 'Smart Tech Hackathon', description: 'A 24-hour coding marathon where students solve real-world industry challenges using cutting-edge AI and web technologies.', date: '2026-07-15T09:00:00.000Z', location: 'Main Seminar Hall', capacity: 100, clubName: 'Coding Club', organizer: { name: 'Coding Club Coordinator', email: 'coding@college.edu' } },
+      { _id: 'mock_event_2', title: 'Robo Wars 2026', description: 'Design, build, and battle! Watch custom-engineered robots clash in a high-octane battle arena to win the grand cash prize.', date: '2026-07-22T10:00:00.000Z', location: 'College Indoor Stadium', capacity: 60, clubName: 'Robotics Club', organizer: { name: 'Robotics Coordinator', email: 'robotics@college.edu' } },
+      { _id: 'mock_event_3', title: 'Cultural Fusion 2026', description: 'An evening of music, choreography, and dramatic performances celebrating national heritage and student talent.', date: '2026-08-05T17:00:00.000Z', location: 'Open Air Auditorium', capacity: 600, clubName: 'Arts & Music Club', organizer: { name: 'Cultural Committee', email: 'cultural@college.edu' } },
+      { _id: 'mock_event_4', title: 'Web Craft React Workshop', description: 'Learn modern single-page application development using React, Vite, and tailwind. Perfect for beginners and intermediates.', date: '2026-06-10T10:00:00.000Z', location: 'CSE Department Lab 3', capacity: 40, clubName: 'Web Dev Club', organizer: { name: 'Web Dev Coordinator', email: 'webdev@college.edu' } }
+    ];
+    const mergedEvents = [...allEvents, ...defaultEvents];
+    const found = mergedEvents.find(e => e._id === eventId);
+
+    if (found) {
+      setEvent(found);
+    } else {
+      setError('Event not found.');
+    }
+    setLoading(false);
+  }, [eventId, navigate]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!form.fullName || !form.email || !form.phone || !form.regNo || !form.department || !form.year) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    if (!form.agreeTerms) {
+      setError('Please agree to the terms and conditions.');
+      return;
+    }
+
+    // Persist registration
+    const newReg = {
+      id: `reg_${Date.now()}`,
+      eventId: event._id,
+      eventTitle: event.title,
+      studentId: user._id,
+      studentName: form.fullName,
+      studentReg: form.regNo,
+      studentEmail: form.email,
+      phone: form.phone,
+      department: form.department,
+      year: form.year,
+      reason: form.reason,
+      date: new Date().toISOString(),
+      status: 'Pending',
+      checkedIn: false
+    };
+
+    // Update global registrations
+    const storedAllRegs = localStorage.getItem('dash_global_registrations');
+    let allRegs = storedAllRegs ? JSON.parse(storedAllRegs) : [];
+    allRegs.push(newReg);
+    localStorage.setItem('dash_global_registrations', JSON.stringify(allRegs));
+
+    // Update user registered event IDs
+    const userRegKey = `dash_registered_${user._id}`;
+    const storedUserRegs = localStorage.getItem(userRegKey);
+    let regIds = storedUserRegs ? JSON.parse(storedUserRegs) : [];
+    if (!regIds.includes(event._id)) {
+      regIds.push(event._id);
+      localStorage.setItem(userRegKey, JSON.stringify(regIds));
+    }
+
+    // Update gamification stats
+    const localStatsKey = `dash_profile_stats_${user._id}`;
+    const storedStats = localStorage.getItem(localStatsKey);
+    let stats = storedStats ? JSON.parse(storedStats) : {
+      points: 0,
+      heartsCount: 0,
+      savesCount: 0,
+      sharesCount: 0,
+      eventViewsCount: 0,
+      registrationsCount: 0
+    };
+
+    stats.registrationsCount += 1;
+    stats.points += 10;
+    localStorage.setItem(localStatsKey, JSON.stringify(stats));
+
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        parsed.points = stats.points;
+        parsed.heartsCount = stats.heartsCount;
+        parsed.savesCount = stats.savesCount;
+        parsed.sharesCount = stats.sharesCount;
+        parsed.eventViewsCount = stats.eventViewsCount;
+        parsed.registrationsCount = stats.registrationsCount;
+        localStorage.setItem('user', JSON.stringify(parsed));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    authService.updateStats('registrations', 'increment').catch(err => {
+      console.warn('Backend registrations stats update failed, fallback to localStorage', err);
+    });
+
+    setSubmitted(true);
+  };
+
+  const formatDate = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) + ' at ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  if (loading) {
+    return (
+      <div className="er-page">
+        <div className="er-loading">Loading event details...</div>
+      </div>
+    );
+  }
+
+  if (error && !event) {
+    return (
+      <div className="er-page">
+        <div className="er-container">
+          <div className="er-error-card">
+            <h2>⚠️ {error}</h2>
+            <button onClick={() => navigate('/dashboard?tab=browse-events')} className="er-btn er-btn-primary">Browse Events</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <div className="er-page">
+        <div className="er-container">
+          <div className="er-success-card">
+            <div className="er-success-icon">✅</div>
+            <h2>Registration Successful!</h2>
+            <p>You have successfully registered for <strong>{event.title}</strong>.</p>
+            <p className="er-success-note">Your registration is currently <strong>Pending</strong> approval from the organizer. You will be notified once it is approved.</p>
+            <div className="er-success-summary">
+              <div className="er-summary-item"><span>Event</span><strong>{event.title}</strong></div>
+              <div className="er-summary-item"><span>Name</span><strong>{form.fullName}</strong></div>
+              <div className="er-summary-item"><span>Reg No.</span><strong>{form.regNo}</strong></div>
+              <div className="er-summary-item"><span>Department</span><strong>{form.department}</strong></div>
+            </div>
+            <div className="er-success-actions">
+              <button onClick={() => navigate('/dashboard?tab=registrations')} className="er-btn er-btn-primary">View My Registrations</button>
+              <button onClick={() => navigate('/dashboard?tab=browse-events')} className="er-btn er-btn-secondary">Browse More Events</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="er-page">
+      <div className="er-container">
+        
+        {/* Back button */}
+        <button className="er-back-btn" onClick={() => navigate(-1)}>
+          ← Back
+        </button>
+
+        <div className="er-layout">
+          {/* Left: Event Details Card */}
+          <div className="er-event-card">
+            <div className="er-event-banner">
+              <span className="er-event-club">{event.clubName || 'College Club'}</span>
+            </div>
+            <div className="er-event-body">
+              <h2 className="er-event-title">{event.title}</h2>
+              <p className="er-event-desc">{event.description}</p>
+              <div className="er-event-details">
+                <div className="er-detail-item">
+                  <span className="er-detail-icon">📅</span>
+                  <div>
+                    <label>Date & Time</label>
+                    <span>{formatDate(event.date)}</span>
+                  </div>
+                </div>
+                <div className="er-detail-item">
+                  <span className="er-detail-icon">📍</span>
+                  <div>
+                    <label>Location</label>
+                    <span>{event.location}</span>
+                  </div>
+                </div>
+                <div className="er-detail-item">
+                  <span className="er-detail-icon">👥</span>
+                  <div>
+                    <label>Capacity</label>
+                    <span>{event.capacity} seats</span>
+                  </div>
+                </div>
+                {event.organizer && (
+                  <div className="er-detail-item">
+                    <span className="er-detail-icon">🧑‍💼</span>
+                    <div>
+                      <label>Organizer</label>
+                      <span>{event.organizer.name}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right: Registration Form */}
+          <div className="er-form-card">
+            <h2 className="er-form-title">📝 Registration Form</h2>
+            <p className="er-form-subtitle">Fill in your details to register for this event</p>
+
+            {error && <div className="er-form-error">{error}</div>}
+
+            <form onSubmit={handleSubmit} className="er-form">
+              <div className="er-form-row">
+                <div className="er-form-group">
+                  <label>Full Name <span className="required">*</span></label>
+                  <input type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="Enter your full name" required />
+                </div>
+                <div className="er-form-group">
+                  <label>Email Address <span className="required">*</span></label>
+                  <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="you@example.com" required />
+                </div>
+              </div>
+
+              <div className="er-form-row">
+                <div className="er-form-group">
+                  <label>Phone Number <span className="required">*</span></label>
+                  <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" required />
+                </div>
+                <div className="er-form-group">
+                  <label>Registration Number <span className="required">*</span></label>
+                  <input type="text" name="regNo" value={form.regNo} onChange={handleChange} placeholder="e.g. 21CSR001" required />
+                </div>
+              </div>
+
+              <div className="er-form-row">
+                <div className="er-form-group">
+                  <label>Department <span className="required">*</span></label>
+                  <select name="department" value={form.department} onChange={handleChange} required>
+                    <option value="">Select Department</option>
+                    <option value="Computer Science Engineering">Computer Science Engineering</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Electronics & Communication">Electronics & Communication</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                    <option value="Biotechnology">Biotechnology</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="er-form-group">
+                  <label>Year of Study <span className="required">*</span></label>
+                  <select name="year" value={form.year} onChange={handleChange} required>
+                    <option value="">Select Year</option>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="er-form-group full-width">
+                <label>Why do you want to participate? <span className="optional">(Optional)</span></label>
+                <textarea name="reason" value={form.reason} onChange={handleChange} placeholder="Tell us why you're interested in this event..." rows="3"></textarea>
+              </div>
+
+              <div className="er-form-checkbox">
+                <input type="checkbox" id="agreeTerms" name="agreeTerms" checked={form.agreeTerms} onChange={handleChange} />
+                <label htmlFor="agreeTerms">I agree to the event <strong>terms and conditions</strong> and confirm all the details are correct.</label>
+              </div>
+
+              <button type="submit" className="er-btn er-btn-primary er-submit-btn">
+                Submit Registration
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

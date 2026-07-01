@@ -93,6 +93,36 @@ export const authService = {
 
   /** GET /api/auth/profile — returns the logged-in user's profile */
   getProfile: () => apiRequest('/auth/profile'),
+
+  /** PUT /api/auth/profile/stats — updates profile stats and awards/deducts points */
+  updateStats: (type, action = 'increment') =>
+    apiRequest('/auth/profile/stats', {
+      method: 'PUT',
+      body: JSON.stringify({ type, action }),
+    }),
+
+  /** GET /api/auth/leaderboard — returns the user ranking leaderboard */
+  getLeaderboard: () => apiRequest('/auth/leaderboard'),
+
+  /** PUT /api/auth/profile — updates profile settings */
+  updateProfile: (profileData) =>
+    apiRequest('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    }),
+
+  /** PUT /api/auth/profile/password — changes user password */
+  changePassword: (passwordData) =>
+    apiRequest('/auth/profile/password', {
+      method: 'PUT',
+      body: JSON.stringify(passwordData),
+    }),
+
+  /** DELETE /api/auth/profile — deletes the user account */
+  deleteAccount: () =>
+    apiRequest('/auth/profile', {
+      method: 'DELETE',
+    }),
 };
 
 // ──────────────────────────────────────────────────────────────────────────────

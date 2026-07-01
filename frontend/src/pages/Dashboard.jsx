@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { eventService, scanService } from '../services/api';
+import { eventService, scanService, authService } from '../services/api';
 import './Dashboard.css';
 
 // Default mock events in case backend is empty
@@ -89,7 +89,29 @@ const defaultClubs = [
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  
+
+  const [likedEvents, setLikedEvents] = useState(() => {
+    const userStored = localStorage.getItem('user');
+    if (!userStored) return [];
+    try {
+      const parsed = JSON.parse(userStored);
+      const userId = parsed._id || 'default';
+      const stored = localStorage.getItem(`dash_liked_${userId}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+
+  const [savedEvents, setSavedEvents] = useState(() => {
+    const userStored = localStorage.getItem('user');
+    if (!userStored) return [];
+    try {
+      const parsed = JSON.parse(userStored);
+      const userId = parsed._id || 'default';
+      const stored = localStorage.getItem(`dash_saved_${userId}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+
   // Navigation Tab State synced with URL query (?tab=...)
   const [currentTab, setCurrentTab] = useState(() => {
     return new URLSearchParams(window.location.search).get('tab') || 'home';
@@ -163,6 +185,26 @@ export default function Dashboard() {
   const [qrScanStudentReg, setQrScanStudentReg] = useState('');
   const [qrScanResult, setQrScanResult] = useState(null);
 
+  // Memoized values for performance optimizations
+  const eventsMap = useMemo(() => {
+    const map = new Map();
+    events.forEach(e => map.set(e._id, e));
+    return map;
+  }, [events]);
+
+  const studentRegistrations = useMemo(() => {
+    if (!user?._id) return [];
+    return registrations.filter(r => r.studentId === user._id);
+  }, [registrations, user?._id]);
+
+  const attendedRegistrations = useMemo(() => {
+    return studentRegistrations.filter(r => r.checkedIn);
+  }, [studentRegistrations]);
+
+  const approvedRegistrations = useMemo(() => {
+    return studentRegistrations.filter(r => r.status === 'Approved');
+  }, [studentRegistrations]);
+
   // Sync tab with URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -174,12 +216,12 @@ export default function Dashboard() {
   useEffect(() => {
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (!token || !userData) {
       navigate('/login');
       return;
     }
-    
+
     try {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
@@ -187,6 +229,118 @@ export default function Dashboard() {
       navigate('/login');
     }
   }, [navigate]);
+
+  // Gamified interactions
+  const triggerStatUpdate = async (type, action) => {
+    if (!user) return;
+    const userId = user._id;
+    const localStatsKey = `dash_profile_stats_${userId}`;
+    const storedStats = localStorage.getItem(localStatsKey);
+    let stats = storedStats ? JSON.parse(storedStats) : {
+      points: 0,
+      heartsCount: 0,
+      savesCount: 0,
+      sharesCount: 0,
+      eventViewsCount: 0,
+      registrationsCount: 0
+    };
+
+    let pointsDiff = 0;
+    if (type === 'hearts') {
+      if (action === 'decrement') {
+        stats.heartsCount = Math.max(0, stats.heartsCount - 1);
+        pointsDiff = -1;
+      } else {
+        stats.heartsCount += 1;
+        pointsDiff = 1;
+      }
+    } else if (type === 'saves') {
+      if (action === 'decrement') {
+        stats.savesCount = Math.max(0, stats.savesCount - 1);
+        pointsDiff = -1;
+      } else {
+        stats.savesCount += 1;
+        pointsDiff = 1;
+      }
+    } else if (type === 'shares') {
+      stats.sharesCount += 1;
+      pointsDiff = 2;
+    } else if (type === 'eventViews') {
+      stats.eventViewsCount += 1;
+      pointsDiff = 1;
+    }
+
+    stats.points = Math.max(0, stats.points + pointsDiff);
+    localStorage.setItem(localStatsKey, JSON.stringify(stats));
+
+    // Also update main user object in localStorage if present so Profile is synced
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        parsed.points = stats.points;
+        parsed.heartsCount = stats.heartsCount;
+        parsed.savesCount = stats.savesCount;
+        parsed.sharesCount = stats.sharesCount;
+        parsed.eventViewsCount = stats.eventViewsCount;
+        parsed.registrationsCount = stats.registrationsCount;
+        localStorage.setItem('user', JSON.stringify(parsed));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    try {
+      await authService.updateStats(type, action);
+    } catch (e) {
+      console.warn('Backend stats sync failed, using localStorage fallback.', e);
+    }
+  };
+
+  const handleLikeEvent = (eventId) => {
+    const isLiked = likedEvents.includes(eventId);
+    const updated = isLiked
+      ? likedEvents.filter(id => id !== eventId)
+      : [...likedEvents, eventId];
+
+    setLikedEvents(updated);
+    localStorage.setItem(`dash_liked_${user._id}`, JSON.stringify(updated));
+    triggerStatUpdate('hearts', isLiked ? 'decrement' : 'increment');
+  };
+
+  const handleSaveEvent = (eventId) => {
+    const isSaved = savedEvents.includes(eventId);
+    const updated = isSaved
+      ? savedEvents.filter(id => id !== eventId)
+      : [...savedEvents, eventId];
+
+    setSavedEvents(updated);
+    localStorage.setItem(`dash_saved_${user._id}`, JSON.stringify(updated));
+    triggerStatUpdate('saves', isSaved ? 'decrement' : 'increment');
+  };
+
+  const handleShareEvent = (event) => {
+    const shareText = `Check out this college event: ${event.title} at ${event.location}!`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareText).then(() => {
+        setActionSuccess(`Copied event details to clipboard! Shared to earn 2 points.`);
+        setTimeout(() => setActionSuccess(''), 3000);
+      }).catch(() => {
+        setActionSuccess(`Shared details: "${event.title}". Earned 2 points.`);
+        setTimeout(() => setActionSuccess(''), 3000);
+      });
+    } else {
+      setActionSuccess(`Shared details: "${event.title}". Earned 2 points.`);
+      setTimeout(() => setActionSuccess(''), 3000);
+    }
+    triggerStatUpdate('shares', 'increment');
+  };
+
+  const handleViewEventDetails = (event) => {
+    setSelectedEvent(event);
+    setIsEventDetailModalOpen(true);
+    triggerStatUpdate('eventViews', 'increment');
+  };
 
   // Load Dashboard Data
   useEffect(() => {
@@ -614,7 +768,7 @@ export default function Dashboard() {
   // Menu lists based on user role
   const isStudent = user.role === 'student';
   const isOrganizer = user.role === 'organizer';
-  
+
   const studentTabs = [
     { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'browse-events', label: 'Browse Events', icon: '🔍' },
@@ -622,7 +776,6 @@ export default function Dashboard() {
     { id: 'attendance', label: 'My Attendance', icon: '📱' },
     { id: 'certificates', label: 'My Certificates', icon: '🏆' },
     { id: 'announcements', label: 'Announcements', icon: '📢' },
-    { id: 'calendar', label: 'Calendar', icon: '🗓️' },
     { id: 'profile', label: 'My Profile', icon: '👤' }
   ];
 
@@ -773,7 +926,7 @@ export default function Dashboard() {
                         <div className="stat-icon">✅</div>
                         <div className="stat-info">
                           <span className="stat-value">
-                            {registrations.filter(r => r.studentId === user._id && r.checkedIn).length}
+                            {attendedRegistrations.length}
                           </span>
                           <span className="stat-label">Attended Events</span>
                         </div>
@@ -782,7 +935,7 @@ export default function Dashboard() {
                         <div className="stat-icon">🏆</div>
                         <div className="stat-info">
                           <span className="stat-value">
-                            {registrations.filter(r => r.studentId === user._id && r.checkedIn).length}
+                            {attendedRegistrations.length}
                           </span>
                           <span className="stat-label">Certificates Earned</span>
                         </div>
@@ -825,10 +978,10 @@ export default function Dashboard() {
                                 </button>
                                 <button
                                   disabled={isRegistered}
-                                  onClick={() => handleRegisterEvent(event)}
+                                  onClick={() => isRegistered ? null : navigate(`/register?eventId=${event._id}`)}
                                   className="dash-btn dash-btn-primary"
                                 >
-                                  {isRegistered ? 'Registered' : 'Quick Register'}
+                                  {isRegistered ? 'Registered' : 'Register'}
                                 </button>
                               </div>
                             </div>
@@ -839,9 +992,9 @@ export default function Dashboard() {
 
                     {/* Button for Upcoming Events at the bottom-right of this section */}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', marginBottom: '32px' }}>
-                      <button 
-                        onClick={() => setCurrentTab('browse-events')} 
-                        className="dash-btn dash-btn-outline" 
+                      <button
+                        onClick={() => setCurrentTab('browse-events')}
+                        className="dash-btn dash-btn-outline"
                         style={{ width: '90px', padding: '4px 10px', fontSize: '11px' }}
                       >
                         Browse All
@@ -866,23 +1019,22 @@ export default function Dashboard() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {registrations.filter(r => r.studentId === user._id).slice().reverse().slice(0, 3).map((reg) => (
+                                {studentRegistrations.slice().reverse().slice(0, 3).map((reg) => (
                                   <tr key={reg.id}>
                                     <td style={{ fontWeight: 'bold' }}>{reg.eventTitle}</td>
                                     <td>
-                                      {formatDate(events.find(e => e._id === reg.eventId)?.date)}
+                                      {formatDate(eventsMap.get(reg.eventId)?.date)}
                                     </td>
                                     <td>
-                                      <span className={`badge ${
-                                        reg.status === 'Approved' ? 'badge-success' :
-                                        reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
-                                      }`}>
+                                      <span className={`badge ${reg.status === 'Approved' ? 'badge-success' :
+                                          reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                        }`}>
                                         {reg.status}
                                       </span>
                                     </td>
                                   </tr>
                                 ))}
-                                {registrations.filter(r => r.studentId === user._id).length === 0 && (
+                                {studentRegistrations.length === 0 && (
                                   <tr>
                                     <td colSpan="3" style={{ textAlign: 'center', padding: '20px', color: 'var(--dash-text-muted)' }}>
                                       No registered events yet.
@@ -895,9 +1047,9 @@ export default function Dashboard() {
                         </div>
                         {/* Button for Registrations at the bottom-right of this section */}
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                          <button 
-                            onClick={() => setCurrentTab('registrations')} 
-                            className="dash-btn dash-btn-outline" 
+                          <button
+                            onClick={() => setCurrentTab('registrations')}
+                            className="dash-btn dash-btn-outline"
                             style={{ width: '80px', padding: '4px 10px', fontSize: '11px' }}
                           >
                             View All
@@ -931,9 +1083,9 @@ export default function Dashboard() {
                         </div>
                         {/* Button for Announcements at the bottom-right of this section */}
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                          <button 
-                            onClick={() => setCurrentTab('announcements')} 
-                            className="dash-btn dash-btn-outline" 
+                          <button
+                            onClick={() => setCurrentTab('announcements')}
+                            className="dash-btn dash-btn-outline"
                             style={{ width: '80px', padding: '4px 10px', fontSize: '11px' }}
                           >
                             View All
@@ -947,10 +1099,10 @@ export default function Dashboard() {
                 {/* 2. Student Browse Events Tab */}
                 {currentTab === 'browse-events' && (() => {
                   const upcomingEvents = events.filter(e => new Date(e.date) >= new Date());
-                  const closedEvents   = events.filter(e => new Date(e.date) <  new Date());
+                  const closedEvents = events.filter(e => new Date(e.date) < new Date());
                   const filteredEvents =
                     browseFilter === 'upcoming' ? upcomingEvents :
-                    browseFilter === 'closed'   ? closedEvents   : events;
+                      browseFilter === 'closed' ? closedEvents : events;
 
                   return (
                     <div>
@@ -986,8 +1138,8 @@ export default function Dashboard() {
                           color: 'var(--dash-text-muted)', fontSize: '15px'
                         }}>
                           {browseFilter === 'upcoming' ? '🗓️ No upcoming events at the moment. Check back soon!' :
-                           browseFilter === 'closed'   ? '📁 No closed events found.' :
-                           '📭 No events available.'}
+                            browseFilter === 'closed' ? '📁 No closed events found.' :
+                              '📭 No events available.'}
                         </div>
                       ) : (
                         <div className="event-grid" style={{ marginTop: '20px' }}>
@@ -1024,16 +1176,44 @@ export default function Dashboard() {
                                     <div className="event-card-info-item"><span>📍</span> {event.location}</div>
                                     <div className="event-card-info-item"><span>👥</span> Capacity: {event.capacity} seats</div>
                                   </div>
+                                  {/* Interactive Action Strip */}
+                                  <div className="event-interaction-strip" style={{ display: 'flex', gap: '10px', marginBottom: '14px', borderTop: '1px solid #f3f4f6', paddingTop: '10px' }}>
+                                    <button
+                                      onClick={() => handleLikeEvent(event._id)}
+                                      className={`interaction-icon-btn ${likedEvents.includes(event._id) ? 'liked' : ''}`}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: '4px', transition: 'all 0.2s' }}
+                                    >
+                                      {likedEvents.includes(event._id) ? '❤️' : '🤍'}
+                                      <span style={{ fontSize: '11px', color: '#6b7280' }}>Like</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleSaveEvent(event._id)}
+                                      className={`interaction-icon-btn ${savedEvents.includes(event._id) ? 'saved' : ''}`}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: '4px', transition: 'all 0.2s' }}
+                                    >
+                                      {savedEvents.includes(event._id) ? '🔖' : '📁'}
+                                      <span style={{ fontSize: '11px', color: '#6b7280' }}>Save</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleShareEvent(event)}
+                                      className="interaction-icon-btn"
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', borderRadius: '4px', transition: 'all 0.2s' }}
+                                    >
+                                      🔗
+                                      <span style={{ fontSize: '11px', color: '#6b7280' }}>Share</span>
+                                    </button>
+                                  </div>
+
                                   <div className="event-card-action-row">
                                     <button
-                                      onClick={() => { setSelectedEvent(event); setIsEventDetailModalOpen(true); }}
+                                      onClick={() => handleViewEventDetails(event)}
                                       className="dash-btn dash-btn-secondary"
                                     >
                                       Details
                                     </button>
                                     <button
                                       disabled={isRegistered || isPast}
-                                      onClick={() => handleRegisterEvent(event)}
+                                      onClick={() => (isRegistered || isPast) ? null : navigate(`/register?eventId=${event._id}`)}
                                       className="dash-btn dash-btn-primary"
                                     >
                                       {isPast ? 'Closed' : isRegistered ? '✓ Registered' : 'Register Now'}
@@ -1067,24 +1247,23 @@ export default function Dashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {registrations.filter(r => r.studentId === user._id).map((reg) => (
+                          {studentRegistrations.map((reg) => (
                             <tr key={reg.id}>
                               <td style={{ fontWeight: 'bold' }}>{reg.eventTitle}</td>
                               <td>
-                                {formatDate(events.find(e => e._id === reg.eventId)?.date)}
+                                {formatDate(eventsMap.get(reg.eventId)?.date)}
                               </td>
                               <td>{new Date(reg.date).toLocaleDateString()}</td>
                               <td>
-                                <span className={`badge ${
-                                  reg.status === 'Approved' ? 'badge-success' :
-                                  reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
-                                }`}>
+                                <span className={`badge ${reg.status === 'Approved' ? 'badge-success' :
+                                    reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                  }`}>
                                   {reg.status}
                                 </span>
                               </td>
                             </tr>
                           ))}
-                          {registrations.filter(r => r.studentId === user._id).length === 0 && (
+                          {studentRegistrations.length === 0 && (
                             <tr>
                               <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--dash-text-muted)' }}>
                                 You have not registered for any events yet. Click "Browse Events" to start.
@@ -1139,7 +1318,7 @@ export default function Dashboard() {
                               </tr>
                             </thead>
                             <tbody>
-                              {registrations.filter(r => r.studentId === user._id && r.status === 'Approved').map((reg) => (
+                              {approvedRegistrations.map((reg) => (
                                 <tr key={reg.id}>
                                   <td style={{ fontWeight: 'bold' }}>{reg.eventTitle}</td>
                                   <td>
@@ -1152,7 +1331,7 @@ export default function Dashboard() {
                                   </td>
                                 </tr>
                               ))}
-                              {registrations.filter(r => r.studentId === user._id && r.status === 'Approved').length === 0 && (
+                              {approvedRegistrations.length === 0 && (
                                 <tr>
                                   <td colSpan="3" style={{ textAlign: 'center', padding: '30px', color: 'var(--dash-text-muted)' }}>
                                     No approved registrations found. Attendance is loggable only for approved events.
@@ -1175,7 +1354,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="event-grid">
-                      {registrations.filter(r => r.studentId === user._id && r.checkedIn).map((reg) => {
+                      {attendedRegistrations.map((reg) => {
                         const hasWinnerResult = Object.entries(results).find(([eventId, val]) => {
                           return eventId === reg.eventId && (val.firstPlace.toLowerCase() === user.name.toLowerCase() || val.secondPlace.toLowerCase() === user.name.toLowerCase() || val.thirdPlace.toLowerCase() === user.name.toLowerCase());
                         });
@@ -1195,8 +1374,8 @@ export default function Dashboard() {
                                 <button
                                   onClick={() => setSelectedCertificate({
                                     eventTitle: reg.eventTitle,
-                                    date: events.find(e => e._id === reg.eventId)?.date || reg.checkInTime,
-                                    clubName: events.find(e => e._id === reg.eventId)?.clubName || 'College Events Club',
+                                    date: eventsMap.get(reg.eventId)?.date || reg.checkInTime,
+                                    clubName: eventsMap.get(reg.eventId)?.clubName || 'College Events Club',
                                     isWinner: !!hasWinnerResult
                                   })}
                                   className="dash-btn dash-btn-primary"
@@ -1208,7 +1387,7 @@ export default function Dashboard() {
                           </div>
                         );
                       })}
-                      {registrations.filter(r => r.studentId === user._id && r.checkedIn).length === 0 && (
+                      {attendedRegistrations.length === 0 && (
                         <div style={{ width: '100%', gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', background: 'var(--dash-card-bg)', border: '1px dashed var(--dash-border)', borderRadius: '12px' }}>
                           <span style={{ fontSize: '48px' }}>🎓</span>
                           <h4 style={{ color: '#fff', marginTop: '16px' }}>No Certificates Earned Yet</h4>
@@ -1242,63 +1421,6 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
-
-                {/* 7. Student Calendar Tab */}
-                {currentTab === 'calendar' && (
-                  <div>
-                    <div className="section-header">
-                      <h3>Event Schedule Calendar - June/July 2026</h3>
-                    </div>
-
-                    <div className="dash-table-container" style={{ padding: '20px' }}>
-                      <div className="calendar-grid">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                          <div key={d} className="calendar-header-day">{d}</div>
-                        ))}
-                        {/* Print dates 28 to 30 of previous month */}
-                        {Array.from({ length: 3 }).map((_, i) => (
-                          <div key={`prev-${i}`} className="calendar-day-box" style={{ opacity: 0.25 }}>
-                            <span className="calendar-day-number">{28 + i}</span>
-                          </div>
-                        ))}
-                        {/* Current month dates (June 1 to 30) */}
-                        {Array.from({ length: 30 }).map((_, i) => {
-                          const dayNum = i + 1;
-                          const dateStr = `2026-06-${dayNum < 10 ? '0' + dayNum : dayNum}`;
-                          const dayEvents = events.filter(e => e.date.substring(0, 10) === dateStr);
-
-                          return (
-                            <div key={`june-${dayNum}`} className={`calendar-day-box ${dayNum === 26 ? 'today' : ''}`}>
-                              <span className="calendar-day-number">{dayNum}</span>
-                              {dayEvents.map(de => (
-                                <div key={de._id} className="calendar-event-dot" title={de.title}>
-                                  {de.title}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
-                        {/* Next month July dates (July 1 to 2) */}
-                        {Array.from({ length: 2 }).map((_, i) => {
-                          const dayNum = i + 1;
-                          const dateStr = `2026-07-0${dayNum}`;
-                          const dayEvents = events.filter(e => e.date.substring(0, 10) === dateStr);
-
-                          return (
-                            <div key={`july-${dayNum}`} className="calendar-day-box">
-                              <span className="calendar-day-number" style={{ color: 'var(--brand-green-light)' }}>Jul {dayNum}</span>
-                              {dayEvents.map(de => (
-                                <div key={de._id} className="calendar-event-dot" title={de.title}>
-                                  {de.title}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </>
             )}
 
@@ -1313,9 +1435,6 @@ export default function Dashboard() {
                         <h2>Manage Events & Staff Accounts</h2>
                         <p>Draft technical specifications, authorize volunteer lists, post announcements, run QR attendance trackers, and export comprehensive spreadsheets.</p>
                       </div>
-                      <button onClick={() => setCurrentTab('event-plan')} className="dash-btn dash-btn-primary" style={{ width: 'auto' }}>
-                        + Plan New Event
-                      </button>
                     </div>
 
                     <div className="stats-grid">
@@ -1389,6 +1508,11 @@ export default function Dashboard() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                      <button onClick={() => setCurrentTab('event-plan')} className="dash-btn dash-btn-primary">
+                        + Plan New Event
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1510,10 +1634,9 @@ export default function Dashboard() {
                               <td>{reg.eventTitle}</td>
                               <td>{new Date(reg.date).toLocaleDateString()}</td>
                               <td>
-                                <span className={`badge ${
-                                  reg.status === 'Approved' ? 'badge-success' :
-                                  reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
-                                }`}>
+                                <span className={`badge ${reg.status === 'Approved' ? 'badge-success' :
+                                    reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                  }`}>
                                   {reg.status}
                                 </span>
                               </td>
@@ -1616,9 +1739,6 @@ export default function Dashboard() {
                   <div>
                     <div className="section-header">
                       <h3>Announcements Broadcast Feed</h3>
-                      <button onClick={() => setIsCreateAnnouncementModalOpen(true)} className="dash-btn dash-btn-primary" style={{ width: 'auto' }}>
-                        + Post Announcement
-                      </button>
                     </div>
 
                     <div style={{ marginTop: '20px' }}>
@@ -1633,6 +1753,11 @@ export default function Dashboard() {
                         </div>
                       ))}
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                      <button onClick={() => setIsCreateAnnouncementModalOpen(true)} className="dash-btn dash-btn-primary">
+                        + Post Announcement
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1641,9 +1766,6 @@ export default function Dashboard() {
                   <div>
                     <div className="section-header">
                       <h3>Staff & Volunteer Roster</h3>
-                      <button onClick={() => setIsAddStaffModalOpen(true)} className="dash-btn dash-btn-primary" style={{ width: 'auto' }}>
-                        + Add Staff/Volunteer
-                      </button>
                     </div>
 
                     <div className="dash-table-container" style={{ marginTop: '20px' }}>
@@ -1672,6 +1794,11 @@ export default function Dashboard() {
                         </tbody>
                       </table>
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                      <button onClick={() => setIsAddStaffModalOpen(true)} className="dash-btn dash-btn-primary">
+                        + Add Staff/Volunteer
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1680,9 +1807,6 @@ export default function Dashboard() {
                   <div>
                     <div className="section-header">
                       <h3>Affiliated Clubs Directory</h3>
-                      <button onClick={() => setIsAddClubModalOpen(true)} className="dash-btn dash-btn-primary" style={{ width: 'auto' }}>
-                        + Add New Club
-                      </button>
                     </div>
 
                     <div className="dash-table-container" style={{ marginTop: '20px' }}>
@@ -1707,6 +1831,11 @@ export default function Dashboard() {
                         </tbody>
                       </table>
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                      <button onClick={() => setIsAddClubModalOpen(true)} className="dash-btn dash-btn-primary">
+                        + Add New Club
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1729,7 +1858,7 @@ export default function Dashboard() {
 
                       <div className="dash-table-container" style={{ padding: '24px' }}>
                         <h3 style={{ margin: '0 0 16px 0' }}>Scan Input Simulator</h3>
-                        
+
                         <div className="dash-form">
                           <div className="dash-form-group">
                             <label>1. Select Event</label>
@@ -1878,9 +2007,6 @@ export default function Dashboard() {
                   <div>
                     <div className="section-header">
                       <h3>Announce Competition Winners</h3>
-                      <button onClick={() => setIsResultEntryModalOpen(true)} className="dash-btn dash-btn-primary" style={{ width: 'auto' }}>
-                        Publish Winners Result
-                      </button>
                     </div>
 
                     <div className="dash-table-container" style={{ marginTop: '20px' }}>
@@ -1916,6 +2042,11 @@ export default function Dashboard() {
                         </tbody>
                       </table>
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+                      <button onClick={() => setIsResultEntryModalOpen(true)} className="dash-btn dash-btn-primary">
+                        Publish Winners Result
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1930,7 +2061,7 @@ export default function Dashboard() {
                       <div className="profile-card">
                         <h3>Download Formats</h3>
                         <p>Generate analytical sheets of registration trends, attendance metrics, and winner pools.</p>
-                        
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', marginTop: '16px' }}>
                           <button onClick={() => handleExportReport('xlsx')} className="dash-btn dash-btn-primary">
                             Export Excel Worksheet (.xlsx)
@@ -1946,7 +2077,7 @@ export default function Dashboard() {
 
                       <div className="dash-table-container" style={{ padding: '24px' }}>
                         <h3>Report Statistics Summaries</h3>
-                        
+
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
                           <div style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid var(--dash-border)' }}>
                             <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Participation Rate</span>
@@ -2099,7 +2230,7 @@ export default function Dashboard() {
                   const closedEvents = events.filter(e => new Date(e.date) < new Date());
                   const filteredEvents =
                     browseFilter === 'upcoming' ? upcomingEvents :
-                    browseFilter === 'closed' ? closedEvents : events;
+                      browseFilter === 'closed' ? closedEvents : events;
 
                   return (
                     <div>
@@ -2240,35 +2371,34 @@ export default function Dashboard() {
                           {(qrScanEventId
                             ? registrations.filter(r => r.eventId === qrScanEventId)
                             : registrations).map((reg) => (
-                            <tr key={reg.id}>
-                              <td style={{ fontWeight: 'bold' }}>{reg.studentName}</td>
-                              <td>{reg.studentReg}</td>
-                              <td>{reg.studentEmail}</td>
-                              <td>{reg.eventTitle}</td>
-                              <td>
-                                <span className={`badge ${
-                                  reg.status === 'Approved' ? 'badge-success' :
-                                  reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
-                                }`}>
-                                  {reg.status}
-                                </span>
-                              </td>
-                              <td>
-                                <span className={`badge ${reg.checkedIn ? 'badge-success' : 'badge-warning'}`}>
-                                  {reg.checkedIn ? 'Yes ✓' : 'No'}
-                                </span>
-                              </td>
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  checked={reg.checkedIn}
-                                  onChange={() => handleToggleAttendanceCheck(reg.id)}
-                                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                                  title="Mark attendance"
-                                />
-                              </td>
-                            </tr>
-                          ))}
+                              <tr key={reg.id}>
+                                <td style={{ fontWeight: 'bold' }}>{reg.studentName}</td>
+                                <td>{reg.studentReg}</td>
+                                <td>{reg.studentEmail}</td>
+                                <td>{reg.eventTitle}</td>
+                                <td>
+                                  <span className={`badge ${reg.status === 'Approved' ? 'badge-success' :
+                                      reg.status === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                    }`}>
+                                    {reg.status}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className={`badge ${reg.checkedIn ? 'badge-success' : 'badge-warning'}`}>
+                                    {reg.checkedIn ? 'Yes ✓' : 'No'}
+                                  </span>
+                                </td>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    checked={reg.checkedIn}
+                                    onChange={() => handleToggleAttendanceCheck(reg.id)}
+                                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                                    title="Mark attendance"
+                                  />
+                                </td>
+                              </tr>
+                            ))}
                           {registrations.length === 0 && (
                             <tr>
                               <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: 'var(--dash-text-muted)' }}>
@@ -2327,7 +2457,7 @@ export default function Dashboard() {
                           {events.map((event, idx) => {
                             const statusToShow = browseFilter === 'pending' ? 'Pending Review' :
                               browseFilter === 'approved' ? 'Approved' :
-                              browseFilter === 'rejected' ? 'Rejected' : 'Pending Review';
+                                browseFilter === 'rejected' ? 'Rejected' : 'Pending Review';
                             // For demo, alternate statuses
                             const demoStatus = idx % 3 === 0 ? 'Pending Review' : idx % 3 === 1 ? 'Approved' : 'Rejected';
                             if (browseFilter !== 'all' && statusToShow !== demoStatus) return null;
@@ -2340,10 +2470,9 @@ export default function Dashboard() {
                                 <td>{event.location}</td>
                                 <td>{event.capacity}</td>
                                 <td>
-                                  <span className={`badge ${
-                                    demoStatus === 'Approved' ? 'badge-success' :
-                                    demoStatus === 'Rejected' ? 'badge-danger' : 'badge-warning'
-                                  }`}>
+                                  <span className={`badge ${demoStatus === 'Approved' ? 'badge-success' :
+                                      demoStatus === 'Rejected' ? 'badge-danger' : 'badge-warning'
+                                    }`}>
                                     {demoStatus}
                                   </span>
                                 </td>
@@ -2420,7 +2549,7 @@ export default function Dashboard() {
 
                       <div className="dash-table-container" style={{ padding: '24px' }}>
                         <h3 style={{ margin: '0 0 16px 0' }}>Mark Attendance</h3>
-                        
+
                         <div className="dash-form">
                           <div className="dash-form-group">
                             <label>Select Event</label>
@@ -2478,7 +2607,7 @@ export default function Dashboard() {
                     <div className="profile-layout">
                       <div className="profile-card">
                         <h3>Report Filters</h3>
-                        
+
                         <div className="dash-form" style={{ marginTop: '16px' }}>
                           <div className="dash-form-group">
                             <label>Select Event</label>
@@ -2507,7 +2636,7 @@ export default function Dashboard() {
 
                       <div className="dash-table-container" style={{ padding: '24px' }}>
                         <h3>Report Metrics</h3>
-                        
+
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
                           <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
                             <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Total Registrations</span>
@@ -2535,8 +2664,8 @@ export default function Dashboard() {
                                   ? Math.round((registrations.filter(r => r.eventId === qrScanEventId && r.checkedIn).length / registrations.filter(r => r.eventId === qrScanEventId).length) * 100)
                                   : 0
                                 : registrations.length > 0
-                                ? Math.round((registrations.filter(r => r.checkedIn).length / registrations.length) * 100)
-                                : 0
+                                  ? Math.round((registrations.filter(r => r.checkedIn).length / registrations.length) * 100)
+                                  : 0
                               }%
                             </h4>
                           </div>
@@ -2667,10 +2796,10 @@ export default function Dashboard() {
                 <span className="badge badge-info">{selectedEvent.clubName || 'General'}</span>
                 <span className="badge badge-success">Capacity: {selectedEvent.capacity} seats</span>
               </div>
-              
+
               <h4 style={{ color: 'var(--brand-green-light)', margin: '0 0 8px 0' }}>Description</h4>
               <p style={{ color: 'var(--dash-text-muted)', lineHeight: '1.6', margin: '0 0 20px 0' }}>{selectedEvent.description}</p>
-              
+
               <h4 style={{ color: 'var(--brand-green-light)', margin: '0 0 8px 0' }}>Venue & Time</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', color: '#fff', fontSize: '14px', marginBottom: '20px' }}>
                 <div>📍 <strong>Location:</strong> {selectedEvent.location}</div>
@@ -2693,10 +2822,10 @@ export default function Dashboard() {
               {isStudent && (
                 <button
                   disabled={registeredEventIds.includes(selectedEvent._id)}
-                  onClick={() => handleRegisterEvent(selectedEvent)}
+                  onClick={() => registeredEventIds.includes(selectedEvent._id) ? null : navigate(`/register?eventId=${selectedEvent._id}`)}
                   className="dash-btn dash-btn-primary"
                 >
-                  {registeredEventIds.includes(selectedEvent._id) ? 'Registered✓' : 'Confirm Registration'}
+                  {registeredEventIds.includes(selectedEvent._id) ? 'Registered✓' : 'Register Now'}
                 </button>
               )}
             </div>

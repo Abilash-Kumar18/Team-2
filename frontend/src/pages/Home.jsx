@@ -410,7 +410,7 @@ export default function Home() {
                             alert("Please sign in to register for events!");
                             navigate('/login');
                           } else {
-                            navigate('/dashboard?tab=browse-events');
+                            navigate(`/register?eventId=${event._id}`);
                           }
                         }}
                         style={{
