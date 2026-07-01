@@ -1,4 +1,7 @@
-/* ─── Reset ─────────────────────────────────────────────────────── */
+/* ============================================================
+   Organizer Event List — Leaf Green-White Brand Palette
+   ============================================================ */
+
 *,
 *::before,
 *::after {
@@ -8,28 +11,28 @@
 }
 
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #e8f5e9;
+  font-family: 'Inter', sans-serif;
+  background: #faf9fe;
   min-height: 100vh;
 }
 
-/* ─── Wrapper ───────────────────────────────────────────────────── */
+/* Wrapper */
 .oep-wrapper {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
   padding: 24px 16px 40px;
-  background: #e8f5e9;
+  background: #faf9fe;
 }
 
-/* ─── Main Card ─────────────────────────────────────────────────── */
+/* Main Card */
 .oep-card {
   width: 100%;
   max-width: 440px;
-  background: #4caf50;
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
   border-radius: 24px;
-  box-shadow: 0 8px 40px rgba(46, 125, 50, 0.28);
+  box-shadow: 0 10px 40px rgba(124, 58, 237, 0.22);
   padding: 22px 18px 24px;
   display: flex;
   flex-direction: column;
@@ -37,7 +40,7 @@ body {
   position: relative;
 }
 
-/* ─── Header ────────────────────────────────────────────────────── */
+/* Header */
 .oep-header {
   display: flex;
   align-items: center;
@@ -69,18 +72,18 @@ body {
   letter-spacing: 0.3px;
 }
 
-/* ─── Divider ───────────────────────────────────────────────────── */
+/* Divider */
 .oep-divider {
   height: 1.5px;
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.25);
   margin-bottom: 18px;
 }
 
-/* ─── Tabs ──────────────────────────────────────────────────────── */
+/* Tabs */
 .oep-tabs {
   display: flex;
   gap: 6px;
-  background: #2e7d32;
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 30px;
   padding: 5px 6px;
   margin-bottom: 20px;
@@ -95,7 +98,7 @@ body {
   padding: 9px 6px;
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.85);
   border-radius: 24px;
   transition: background 0.2s, color 0.2s;
   display: flex;
@@ -109,21 +112,21 @@ body {
 }
 
 .oep-tab--active {
-  background: #4caf50;
-  color: #fff;
+  background: #ffffff;
+  color: #22c55e;
   font-weight: 800;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .oep-tab-bar {
   display: block;
   width: 24px;
   height: 3px;
-  background: #ffeb3b;
+  background: #22c55e;
   border-radius: 2px;
 }
 
-/* ─── Events List ───────────────────────────────────────────────── */
+/* Events List */
 .oep-events-list {
   display: flex;
   flex-direction: column;
@@ -133,18 +136,18 @@ body {
 
 .oep-empty {
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
   font-size: 15px;
   padding: 30px 0;
   font-style: italic;
 }
 
-/* ─── Event Card ────────────────────────────────────────────────── */
+/* Event Card */
 .oep-event-card {
-  background: #66bb6a;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 18px;
   padding: 16px 16px 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -153,7 +156,8 @@ body {
 
 .oep-event-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
 /* Status Badge */
@@ -169,15 +173,15 @@ body {
 }
 
 .oep-badge--open {
-  background: #e8f5e9;
-  color: #2e7d32;
-  border: 1.5px solid #2e7d32;
+  background: #ffffff;
+  color: #22c55e;
+  border: 1px solid #ffffff;
 }
 
 .oep-badge--closed {
-  background: #fff3e0;
-  color: #e65100;
-  border: 1.5px solid #e65100;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Event Title */
@@ -199,7 +203,7 @@ body {
 
 .oep-event-meta span {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
   gap: 7px;
@@ -214,7 +218,7 @@ body {
 /* Card Divider */
 .oep-card-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.2);
   margin-bottom: 12px;
 }
 
@@ -233,14 +237,14 @@ body {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   text-align: center;
 }
 
 .oep-link-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .oep-link-btn:active {
@@ -248,22 +252,22 @@ body {
 }
 
 .oep-link-btn--details {
-  color: #1565c0;
+  color: #22c55e;
 }
 
 .oep-link-btn--edit {
-  color: #2e7d32;
+  color: #4ade80;
 }
 
 .oep-link-btn--view {
-  color: #6a1b9a;
+  color: #3b82f6;
 }
 
 .oep-link-btn--report {
-  color: #e65100;
+  color: #f59e0b;
 }
 
-/* ─── Footer / Create Button ────────────────────────────────────── */
+/* Footer / Create Button */
 .oep-footer {
   position: sticky;
   bottom: 0;
@@ -277,35 +281,35 @@ body {
   gap: 10px;
   width: 100%;
   height: 54px;
-  background: #ffeb3b;
+  background: #ffffff;
   border: none;
   border-radius: 30px;
   font-size: 15px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: #22c55e;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   letter-spacing: 0.2px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .oep-create-btn:hover {
-  background: #fdd835;
+  background: #f5f3ff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .oep-create-btn:active {
   transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .oep-create-icon {
   font-size: 18px;
-  color: #2e7d32;
+  color: #22c55e;
 }
 
-/* ─── Responsive ────────────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 480px) {
   .oep-wrapper {
     padding: 0;
@@ -322,7 +326,7 @@ body {
   .oep-footer {
     position: sticky;
     bottom: 0;
-    background: #4caf50;
+    background: #22c55e;
     padding: 12px 0 4px;
     margin: 0 -18px -24px;
     padding-left: 18px;

@@ -675,7 +675,11 @@ export default function Dashboard() {
             <button
               key={tab.id}
               onClick={() => {
-                setCurrentTab(tab.id);
+                if (tab.id === 'profile') {
+                  navigate('/profile');
+                } else {
+                  setCurrentTab(tab.id);
+                }
                 setIsSidebarOpen(false);
               }}
               className={`nav-item ${currentTab === tab.id ? 'active' : ''}`}
@@ -687,7 +691,7 @@ export default function Dashboard() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="user-summary-card">
+          <div className="user-summary-card" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }} title="View Profile">
             <div className="user-avatar">
               {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
@@ -997,7 +1001,7 @@ export default function Dashboard() {
                                   style={{
                                     background: isPast
                                       ? 'linear-gradient(135deg, rgba(80,80,80,0.4) 0%, rgba(20,20,20,0.9) 100%)'
-                                      : 'linear-gradient(135deg, rgba(91,184,37,0.3) 0%, rgba(20,29,34,0.9) 100%)'
+                                      : 'linear-gradient(135deg, rgba(124, 58, 237,0.3) 0%, rgba(20,29,34,0.9) 100%)'
                                   }}
                                 >
                                   <span className="event-card-club">{event.clubName || 'College Club'}</span>
@@ -3022,7 +3026,7 @@ export default function Dashboard() {
                   const styleContent = `
                     <style>
                       body { background: white !important; color: black !important; padding: 20px; }
-                      .certificate-preview-box { border: 15px double #5BB825 !important; background: white !important; box-shadow: none !important; }
+                      .certificate-preview-box { border: 15px double #22c55e !important; background: white !important; box-shadow: none !important; }
                       .cert-title { color: #1a4d10 !important; }
                       .modal-header, .modal-footer { display: none !important; }
                     </style>

@@ -1,22 +1,27 @@
+/* ============================================================
+   Verification Page — Leaf Green-White Brand Palette
+   ============================================================ */
+
 .verify-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: transparent;
+  background-color: #faf9fe;
   padding: 20px;
   box-sizing: border-box;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .verify-card {
-  background: linear-gradient(160deg, #9FE04A 0%, #5BB825 100%);
+  background: #ffffff;
   width: 100%;
   max-width: 440px;
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 36px 32px;
-  box-shadow: 0 20px 50px rgba(91, 184, 37, 0.25);
-  color: white;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.06), 0 1px 3px rgba(0,0,0,0.02);
+  border: 1px solid #e5e7eb;
+  color: #1f2937;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -32,11 +37,11 @@
 }
 
 .header h2 {
-  font-size: 26px;
-  font-weight: 700;
-  color: white;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1f2937;
   margin: 0;
-  letter-spacing: 0.4px;
+  letter-spacing: -0.5px;
 }
 
 .back-arrow {
@@ -44,23 +49,23 @@
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 26px;
+  font-size: 24px;
   cursor: pointer;
-  color: white;
+  color: #4b5563;
   text-decoration: none;
   line-height: 1;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: color 0.2s, transform 0.2s;
 }
 
 .back-arrow:hover {
-  opacity: 0.8;
+  color: #22c55e;
   transform: translateY(-50%) translateX(-3px);
 }
 
 .verify-description {
   font-size: 14px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.65;
+  color: #4b5563;
   margin-bottom: 32px;
   text-align: center;
 }
@@ -79,22 +84,21 @@
 .otp-input-field {
   width: 60px;
   height: 60px;
-  background-color: #FAFFF2;
-  border: 2px solid transparent;
-  border-radius: 14px;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
   text-align: center;
   font-size: 26px;
   font-weight: 700;
-  color: #3a7a10;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .otp-input-field:focus {
   outline: none;
-  border-color: #EEFF6E;
-  box-shadow: 0 0 0 3px rgba(238, 255, 110, 0.35);
-  background-color: #fff;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 .resend-container {
@@ -103,41 +107,41 @@
 }
 
 .resend-text {
-  color: rgba(255,255,255,0.88);
+  color: #4b5563;
 }
 
 .resend-link {
-  color: #EEFF6E;
+  color: #22c55e;
   font-weight: 700;
   text-decoration: none;
   margin-left: 4px;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
 }
 
 .resend-link:hover {
+  color: #16a34a;
   text-decoration: underline;
-  opacity: 0.85;
 }
 
 .verify-submit-btn {
   width: 100%;
-  padding: 14px;
-  background-color: #EEFF6E;
-  color: #3a7a10;
+  padding: 13px;
+  background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%);
+  color: #ffffff;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 700;
   cursor: pointer;
-  font-size: 16px;
-  box-shadow: 0 4px 14px rgba(238, 255, 110, 0.3);
-  transition: all 0.2s ease-in-out;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
 }
 
 .verify-submit-btn:hover {
-  background-color: #f5ff90;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(238, 255, 110, 0.45);
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.35);
 }
 
 .verify-submit-btn:active {
@@ -148,7 +152,7 @@
 @media (min-width: 768px) {
   .verify-card {
     padding: 44px 40px;
-    border-radius: 22px;
+    border-radius: 16px;
     max-width: 480px;
   }
 }
@@ -157,13 +161,5 @@
 @media (max-width: 480px) {
   .verify-card {
     padding: 28px 20px;
-  }
-  .otp-input-field {
-    width: 50px;
-    height: 50px;
-    font-size: 22px;
-  }
-  .otp-inputs-container {
-    gap: 10px;
   }
 }

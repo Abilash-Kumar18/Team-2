@@ -1,4 +1,7 @@
-/* ─── Reset ─────────────────────────────────────────────────────── */
+/* ============================================================
+   Organizer Home Page — Leaf Green-White Brand Palette
+   ============================================================ */
+
 *,
 *::before,
 *::after {
@@ -8,35 +11,35 @@
 }
 
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #e8f5e9;
+  font-family: 'Inter', sans-serif;
+  background: #faf9fe;
   min-height: 100vh;
 }
 
-/* ─── Wrapper ───────────────────────────────────────────────────── */
+/* Wrapper */
 .ohp-wrapper {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
   padding: 24px 16px 40px;
-  background: #e8f5e9;
+  background: #faf9fe;
 }
 
-/* ─── Main Card ─────────────────────────────────────────────────── */
+/* Main Card */
 .ohp-card {
   width: 100%;
   max-width: 440px;
-  background: #4caf50;
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
   border-radius: 24px;
-  box-shadow: 0 8px 40px rgba(46, 125, 50, 0.28);
+  box-shadow: 0 10px 40px rgba(124, 58, 237, 0.22);
   padding: 22px 18px 28px;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-/* ─── Top Bar ───────────────────────────────────────────────────── */
+/* Top Bar */
 .ohp-topbar {
   display: flex;
   align-items: center;
@@ -68,14 +71,14 @@ body {
   letter-spacing: 0.3px;
 }
 
-/* ─── Divider ───────────────────────────────────────────────────── */
+/* Divider */
 .ohp-divider {
   height: 1.5px;
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.25);
   margin: 0 0 18px;
 }
 
-/* ─── Greeting ──────────────────────────────────────────────────── */
+/* Greeting */
 .ohp-greeting {
   margin-bottom: 20px;
 }
@@ -89,10 +92,10 @@ body {
 
 .ohp-greeting-sub {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* ─── Section ───────────────────────────────────────────────────── */
+/* Section */
 .ohp-section {
   margin-bottom: 20px;
 }
@@ -110,19 +113,20 @@ body {
   margin-bottom: 10px;
 }
 
-/* ─── Highlight Card ────────────────────────────────────────────── */
+/* Highlight Card */
 .ohp-highlight-card {
-  background: #66bb6a;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   padding: 16px 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   position: relative;
 }
 
 .ohp-highlight-badge {
   display: inline-block;
-  background: #ffeb3b;
-  color: #1a1a1a;
+  background: #ffffff;
+  color: #22c55e;
   font-size: 11px;
   font-weight: 700;
   border-radius: 20px;
@@ -147,7 +151,7 @@ body {
 
 .ohp-highlight-meta span {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -166,18 +170,18 @@ body {
   padding: 8px 20px;
   font-size: 13px;
   font-weight: 700;
-  color: #2e7d32;
+  color: #22c55e;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ohp-view-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
-/* ─── Quick Stats ───────────────────────────────────────────────── */
+/* Quick Stats */
 .ohp-stats-container {
   display: flex;
   gap: 10px;
@@ -186,14 +190,15 @@ body {
 
 .ohp-stat-card {
   flex: 1;
-  background: #66bb6a;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 14px;
-  padding: 10px 8px 10px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   min-width: 0;
 }
 
@@ -216,16 +221,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .ohp-stat-count {
   font-size: 20px;
   font-weight: 800;
-  color: #2e7d32;
+  color: #22c55e;
 }
 
-/* ─── Quick Actions ─────────────────────────────────────────────── */
+/* Quick Actions */
 .ohp-actions-list {
   display: flex;
   flex-direction: column;
@@ -243,14 +248,14 @@ body {
   border-radius: 30px;
   padding: 0 22px;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   text-align: left;
 }
 
 .ohp-action-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
 .ohp-action-btn:active {
@@ -262,20 +267,22 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  color: #22c55e;
 }
 
 .ohp-action-label {
   font-size: 15px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #1f2937;
 }
 
-/* ─── Recent Activity ───────────────────────────────────────────── */
+/* Recent Activity */
 .ohp-activity-card {
-  background: #66bb6a;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   padding: 14px 16px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .ohp-activity-list {
@@ -296,12 +303,12 @@ body {
 
 .ohp-activity-dot {
   font-size: 7px;
-  color: #ffeb3b;
+  color: #fff;
   flex-shrink: 0;
   margin-top: 5px;
 }
 
-/* ─── Responsive ────────────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 480px) {
   .ohp-wrapper {
     padding: 0;

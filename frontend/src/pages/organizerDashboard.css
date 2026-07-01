@@ -1,4 +1,7 @@
- /* ─── Reset / Base ─────────────────────────────────────────────── */
+/* ============================================================
+   Organizer Dashboard — Leaf Green-White Brand Palette
+   ============================================================ */
+
 *,
 *::before,
 *::after {
@@ -8,37 +11,37 @@
 }
 
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #e8f5e9;
+  font-family: 'Inter', sans-serif;
+  background: #faf9fe;
   min-height: 100vh;
 }
 
-/* ─── Outer Wrapper ─────────────────────────────────────────────── */
+/* Outer Wrapper */
 .od-wrapper {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
   padding: 24px 16px;
-  background: #e8f5e9;
+  background: #faf9fe;
 }
 
-/* ─── Dashboard Card ────────────────────────────────────────────── */
+/* Dashboard Card */
 .od-card {
   width: 100%;
   max-width: 420px;
-  background: #4caf50;
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
   border-radius: 24px;
-  box-shadow: 0 8px 40px rgba(46, 125, 50, 0.28);
+  box-shadow: 0 10px 40px rgba(124, 58, 237, 0.22);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   padding-bottom: 24px;
 }
 
-/* ─── Header ────────────────────────────────────────────────────── */
+/* Header */
 .od-header {
-  background: #4caf50;
+  background: transparent;
   padding: 22px 20px 0;
   position: relative;
 }
@@ -60,7 +63,7 @@ body {
   opacity: 0.75;
 }
 
-/* Profile row */
+/* Profile Row */
 .od-profile-row {
   display: flex;
   align-items: center;
@@ -90,16 +93,16 @@ body {
 
 .od-email {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .od-role {
   display: inline-block;
   margin-top: 4px;
   font-size: 12px;
-  font-weight: 600;
-  color: #2e7d32;
-  background: #ffeb3b;
+  font-weight: 700;
+  color: #22c55e;
+  background: #ffffff;
   border-radius: 20px;
   padding: 2px 10px;
   letter-spacing: 0.3px;
@@ -108,12 +111,12 @@ body {
 /* Divider */
 .od-divider {
   height: 1.5px;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.25);
   margin: 0 -20px;
   margin-bottom: 0;
 }
 
-/* ─── Menu ──────────────────────────────────────────────────────── */
+/* Menu */
 .od-menu {
   display: flex;
   flex-direction: column;
@@ -133,52 +136,52 @@ body {
   border-radius: 35px;
   padding: 0 22px;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   text-align: left;
 }
 
 .od-menu-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
 .od-menu-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .od-menu-btn--active {
-  background: #e8f5e9;
-  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.22);
+  background: #f5f3ff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15);
 }
 
 /* Icon */
 .od-menu-icon {
   font-size: 20px;
-  color: #1a1a1a;
+  color: #4b5563;
   flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
 .od-menu-btn--active .od-menu-icon {
-  color: #2e7d32;
+  color: #22c55e;
 }
 
 /* Label */
 .od-menu-label {
   font-size: 15px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #1f2937;
   letter-spacing: 0.1px;
 }
 
 .od-menu-btn--active .od-menu-label {
-  color: #2e7d32;
+  color: #22c55e;
 }
 
-/* ─── Footer / Logout ───────────────────────────────────────────── */
+/* Footer / Logout */
 .od-footer {
   padding: 16px 18px 0;
 }
@@ -190,34 +193,34 @@ body {
   gap: 10px;
   width: 100%;
   height: 52px;
-  background: #ffeb3b;
-  border: none;
+  background: #ffffff;
+  border: 1px solid rgba(255,255,255,0.4);
   border-radius: 35px;
   cursor: pointer;
   font-size: 15px;
-  font-weight: 700;
-  color: #1a1a1a;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.13);
+  font-weight: 750;
+  color: #4ade80;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   letter-spacing: 0.2px;
 }
 
 .od-logout-btn:hover {
-  background: #fdd835;
+  background: #fff5f5;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 .od-logout-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .od-logout-icon {
   font-size: 17px;
 }
 
-/* ─── Responsive ────────────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 480px) {
   .od-wrapper {
     padding: 0;
