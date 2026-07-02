@@ -1022,7 +1022,7 @@ export default function Dashboard() {
                                   onClick={() => isRegistered ? null : navigate(`/register?eventId=${event._id}`)}
                                   className="dash-btn dash-btn-primary"
                                 >
-                                  {isRegistered ? 'Registered' : 'Register'}
+                                  {isRegistered ? 'Registered' : 'Register Now'}
                                 </button>
                               </div>
                             </div>

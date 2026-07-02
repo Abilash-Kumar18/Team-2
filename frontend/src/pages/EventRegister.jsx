@@ -10,6 +10,25 @@ import culturalFusionImg from '../assets/images/cultural_fusion.jpg';
 import reactWorkshopImg from '../assets/images/react_workshop.jpg';
 import defaultEventImg from '../assets/images/default_event.jpg';
 
+const getEventImage = (evt) => {
+  if (!evt) return defaultEventImg;
+  if (evt.imageUrl) return evt.imageUrl;
+  const titleLower = (evt.title || '').toLowerCase();
+  if (titleLower.includes('hack') || titleLower.includes('code') || titleLower.includes('tech') || titleLower.includes('program')) {
+    return hackathonImg;
+  }
+  if (titleLower.includes('robo') || titleLower.includes('robot') || titleLower.includes('wars') || titleLower.includes('mech')) {
+    return robotWarsImg;
+  }
+  if (titleLower.includes('cultural') || titleLower.includes('fusion') || titleLower.includes('music') || titleLower.includes('dance') || titleLower.includes('art') || titleLower.includes('fest')) {
+    return culturalFusionImg;
+  }
+  if (titleLower.includes('workshop') || titleLower.includes('react') || titleLower.includes('web') || titleLower.includes('learn') || titleLower.includes('craft')) {
+    return reactWorkshopImg;
+  }
+  return defaultEventImg;
+};
+
 export default function EventRegister() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -68,23 +87,6 @@ export default function EventRegister() {
     if (storedCustomEvents) {
       try { allEvents = JSON.parse(storedCustomEvents); } catch { }
     }
-    const getEventImage = (evt) => {
-      if (evt.imageUrl) return evt.imageUrl;
-      const titleLower = (evt.title || '').toLowerCase();
-      if (titleLower.includes('hack') || titleLower.includes('code') || titleLower.includes('tech') || titleLower.includes('program')) {
-        return hackathonImg;
-      }
-      if (titleLower.includes('robo') || titleLower.includes('robot') || titleLower.includes('wars') || titleLower.includes('mech')) {
-        return robotWarsImg;
-      }
-      if (titleLower.includes('cultural') || titleLower.includes('fusion') || titleLower.includes('music') || titleLower.includes('dance') || titleLower.includes('art') || titleLower.includes('fest')) {
-        return culturalFusionImg;
-      }
-      if (titleLower.includes('workshop') || titleLower.includes('react') || titleLower.includes('web') || titleLower.includes('learn') || titleLower.includes('craft')) {
-        return reactWorkshopImg;
-      }
-      return defaultEventImg;
-    };
 
     // Also check default mock events
     const defaultEvents = [
