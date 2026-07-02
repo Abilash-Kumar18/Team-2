@@ -88,8 +88,12 @@ export default function StudentSignUp() {
         localStorage.setItem("user", JSON.stringify(response.user));
       }
 
-      alert("Student Account Created Successfully!");
-      navigate("/login");
+      // Auto-login: if token was returned, go straight to dashboard
+      if (response.token) {
+        navigate("/dashboard");
+      } else {
+        navigate("/login");
+      }
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {

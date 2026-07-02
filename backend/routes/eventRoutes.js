@@ -13,7 +13,10 @@ const {
 } = require('../controllers/eventController');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 
-router.route('/')
+// GET  /api/events       — public (anyone can browse)
+// POST /api/events       — organizer or admin only
+router
+  .route('/')
   .get(getEvents)
   .post(protect, authorizeRoles('organizer', 'faculty', 'admin'), createEvent);
 
@@ -21,8 +24,8 @@ router.route('/')
 router.route('/pending')
   .get(protect, authorizeRoles('faculty', 'admin'), getPendingEvents);
 
-router.route('/:id')
-  .get(getEventById);
+// GET /api/events/:id    — public
+router.route('/:id').get(getEventById);
 
 router.route('/:id/status')
   .put(protect, authorizeRoles('faculty', 'admin'), updateEventStatus);
