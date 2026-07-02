@@ -3,6 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import { eventService, scanService, authService } from '../services/api';
 import './Dashboard.css';
 
+// Import local images from assets
+import hackathonImg from '../assets/images/hackathon.jpg';
+import robotWarsImg from '../assets/images/robot_wars.jpg';
+import culturalFusionImg from '../assets/images/cultural_fusion.jpg';
+import reactWorkshopImg from '../assets/images/react_workshop.jpg';
+import defaultEventImg from '../assets/images/default_event.jpg';
+
+const getEventImage = (event) => {
+  if (event.imageUrl) return event.imageUrl;
+  
+  const titleLower = (event.title || '').toLowerCase();
+  if (titleLower.includes('hack') || titleLower.includes('code') || titleLower.includes('tech') || titleLower.includes('program')) {
+    return hackathonImg;
+  }
+  if (titleLower.includes('robo') || titleLower.includes('robot') || titleLower.includes('wars') || titleLower.includes('mech')) {
+    return robotWarsImg;
+  }
+  if (titleLower.includes('cultural') || titleLower.includes('fusion') || titleLower.includes('music') || titleLower.includes('dance') || titleLower.includes('art') || titleLower.includes('fest')) {
+    return culturalFusionImg;
+  }
+  if (titleLower.includes('workshop') || titleLower.includes('react') || titleLower.includes('web') || titleLower.includes('learn') || titleLower.includes('craft')) {
+    return reactWorkshopImg;
+  }
+  
+  return defaultEventImg;
+};
+
 // Default mock events in case backend is empty
 const defaultEvents = [
   {
@@ -13,7 +40,8 @@ const defaultEvents = [
     location: 'Main Seminar Hall',
     capacity: 100,
     clubName: 'Coding Club',
-    organizer: { name: 'Coding Club Coordinator', email: 'coding@college.edu' }
+    organizer: { name: 'Coding Club Coordinator', email: 'coding@college.edu' },
+    imageUrl: hackathonImg
   },
   {
     _id: 'mock_event_2',
@@ -23,7 +51,8 @@ const defaultEvents = [
     location: 'College Indoor Stadium',
     capacity: 60,
     clubName: 'Robotics Club',
-    organizer: { name: 'Robotics Coordinator', email: 'robotics@college.edu' }
+    organizer: { name: 'Robotics Coordinator', email: 'robotics@college.edu' },
+    imageUrl: robotWarsImg
   },
   {
     _id: 'mock_event_3',
@@ -33,7 +62,8 @@ const defaultEvents = [
     location: 'Open Air Auditorium',
     capacity: 600,
     clubName: 'Arts & Music Club',
-    organizer: { name: 'Cultural Committee', email: 'cultural@college.edu' }
+    organizer: { name: 'Cultural Committee', email: 'cultural@college.edu' },
+    imageUrl: culturalFusionImg
   },
   {
     _id: 'mock_event_4',
@@ -43,7 +73,8 @@ const defaultEvents = [
     location: 'CSE Department Lab 3',
     capacity: 40,
     clubName: 'Web Dev Club',
-    organizer: { name: 'Web Dev Coordinator', email: 'webdev@college.edu' }
+    organizer: { name: 'Web Dev Coordinator', email: 'webdev@college.edu' },
+    imageUrl: reactWorkshopImg
   }
 ];
 
@@ -358,8 +389,10 @@ export default function Dashboard() {
           console.warn('Backend API event fetch failed, falling back to default events.', e);
         }
 
-        // Merge API events and fallback events
-        const mergedEvents = apiEvents.length > 0 ? apiEvents : defaultEvents;
+        // Ensure sample events (defaultEvents) are always displayed alongside API events, avoiding duplicates
+        const apiEventIds = new Set(apiEvents.map(e => e._id));
+        const nonDuplicateDefaultEvents = defaultEvents.filter(de => !apiEventIds.has(de._id));
+        const mergedEvents = [...apiEvents, ...nonDuplicateDefaultEvents];
         setEvents(mergedEvents);
 
         // Load Persistent local storage data
@@ -950,9 +983,17 @@ export default function Dashboard() {
                     <div className="event-grid">
                       {events.filter(e => new Date(e.date) >= new Date()).slice(0, 3).map((event) => {
                         const isRegistered = registeredEventIds.includes(event._id);
+                        const eventImg = getEventImage(event);
                         return (
                           <div key={event._id} className="dash-event-card">
-                            <div className="event-card-header">
+                            <div 
+                              className="event-card-header"
+                              style={{
+                                backgroundImage: `url(${eventImg})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center'
+                              }}
+                            >
                               <span className="event-card-club">{event.clubName || 'College Club'}</span>
                             </div>
                             <div className="event-card-content">
@@ -1151,17 +1192,18 @@ export default function Dashboard() {
                                 <div
                                   className="event-card-header"
                                   style={{
-                                    background: isPast
-                                      ? 'linear-gradient(135deg, rgba(80,80,80,0.4) 0%, rgba(20,20,20,0.9) 100%)'
-                                      : 'linear-gradient(135deg, rgba(124, 58, 237,0.3) 0%, rgba(20,29,34,0.9) 100%)'
+                                    backgroundImage: `url(${getEventImage(event)})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    filter: isPast ? 'grayscale(80%)' : 'none'
                                   }}
                                 >
                                   <span className="event-card-club">{event.clubName || 'College Club'}</span>
                                   <span
                                     className="event-card-tag"
                                     style={isPast
-                                      ? { background: '#444', color: '#aaa' }
-                                      : { background: 'var(--brand-green-light)', color: 'var(--brand-text-green)' }
+                                      ? { background: '#444', color: '#aaa', position: 'absolute', bottom: '12px', left: '12px' }
+                                      : { background: 'var(--brand-green-light)', color: 'var(--brand-text-green)', position: 'absolute', bottom: '12px', left: '12px' }
                                     }
                                   >
                                     {isPast ? '🔴 Closed' : '🟢 Upcoming'}
@@ -1474,40 +1516,71 @@ export default function Dashboard() {
                       <h3>Active Events Registry</h3>
                     </div>
 
-                    <div className="dash-table-container">
-                      <table className="dash-table">
-                        <thead>
-                          <tr>
-                            <th>Event Name</th>
-                            <th>Date & Time</th>
-                            <th>Venue</th>
-                            <th>Capacity Limit</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {events.map((event) => (
-                            <tr key={event._id}>
-                              <td style={{ fontWeight: 'bold' }}>{event.title}</td>
-                              <td>{formatDate(event.date)}</td>
-                              <td>{event.location}</td>
-                              <td>{event.capacity} seats</td>
-                              <td>
-                                <button
-                                  onClick={() => {
-                                    setSelectedEvent(event);
-                                    setIsEventDetailModalOpen(true);
-                                  }}
-                                  className="dash-btn dash-btn-secondary"
-                                  style={{ padding: '4px 10px', fontSize: '11px' }}
+                    <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+                      <div className="event-grid">
+                        {events.map((event) => {
+                          const isPast = new Date(event.date) < new Date();
+                          const eventImg = getEventImage(event);
+                          return (
+                            <div key={event._id} className="dash-event-card">
+                              <div 
+                                className="event-card-header"
+                                style={{
+                                  backgroundImage: `url(${eventImg})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  filter: isPast ? 'grayscale(80%)' : 'none'
+                                }}
+                              >
+                                <span className="event-card-club">{event.clubName || 'College Club'}</span>
+                                <span
+                                  className="event-card-tag"
+                                  style={isPast
+                                    ? { background: '#444', color: '#aaa', position: 'absolute', bottom: '12px', left: '12px' }
+                                    : { background: 'var(--brand-green-light)', color: 'var(--brand-text-green)', position: 'absolute', bottom: '12px', left: '12px' }
+                                  }
                                 >
-                                  View
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                                  {isPast ? '🔴 Closed' : '🟢 Active'}
+                                </span>
+                              </div>
+                              <div className="event-card-content">
+                                <h4 className="event-card-title">{event.title}</h4>
+                                <p className="event-card-desc">{event.description}</p>
+                                <div className="event-card-info-row">
+                                  <div className="event-card-info-item">
+                                    <span>📅</span> {formatDate(event.date)}
+                                  </div>
+                                  <div className="event-card-info-item">
+                                    <span>📍</span> {event.location}
+                                  </div>
+                                  <div className="event-card-info-item">
+                                    <span>👥</span> Capacity: {event.capacity} seats
+                                  </div>
+                                </div>
+                                <div className="event-card-action-row">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedEvent(event);
+                                      setIsEventDetailModalOpen(true);
+                                    }}
+                                    className="dash-btn dash-btn-secondary"
+                                    style={{ flex: 1 }}
+                                  >
+                                    Details
+                                  </button>
+                                  <button
+                                    onClick={() => setCurrentTab('registrations')}
+                                    className="dash-btn dash-btn-primary"
+                                    style={{ flex: 1 }}
+                                  >
+                                    Registrations
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
                       <button onClick={() => setCurrentTab('event-plan')} className="dash-btn dash-btn-primary">
@@ -2638,27 +2711,27 @@ export default function Dashboard() {
                         <h3>Report Metrics</h3>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
-                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
-                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Total Registrations</span>
-                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                          <div style={{ padding: '16px', background: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '12px', textTransform: 'uppercase', fontWeight: '500' }}>Total Registrations</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0', fontWeight: '700' }}>
                               {qrScanEventId
                                 ? registrations.filter(r => r.eventId === qrScanEventId).length
                                 : registrations.length
                               }
                             </h4>
                           </div>
-                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
-                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Attendance Count</span>
-                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                          <div style={{ padding: '16px', background: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '12px', textTransform: 'uppercase', fontWeight: '500' }}>Attendance Count</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0', fontWeight: '700' }}>
                               {qrScanEventId
                                 ? registrations.filter(r => r.eventId === qrScanEventId && r.checkedIn).length
                                 : registrations.filter(r => r.checkedIn).length
                               }
                             </h4>
                           </div>
-                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
-                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Attendance Rate</span>
-                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                          <div style={{ padding: '16px', background: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '12px', textTransform: 'uppercase', fontWeight: '500' }}>Attendance Rate</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0', fontWeight: '700' }}>
                               {qrScanEventId
                                 ? registrations.filter(r => r.eventId === qrScanEventId).length > 0
                                   ? Math.round((registrations.filter(r => r.eventId === qrScanEventId && r.checkedIn).length / registrations.filter(r => r.eventId === qrScanEventId).length) * 100)
@@ -2669,9 +2742,9 @@ export default function Dashboard() {
                               }%
                             </h4>
                           </div>
-                          <div style={{ padding: '16px', background: 'rgba(96,150,186,0.1)', borderRadius: '10px', border: '1px solid rgba(96,150,186,0.3)' }}>
-                            <span style={{ color: 'var(--dash-text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>Pending Approvals</span>
-                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0' }}>
+                          <div style={{ padding: '16px', background: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <span style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '12px', textTransform: 'uppercase', fontWeight: '500' }}>Pending Approvals</span>
+                            <h4 style={{ color: '#fff', fontSize: '20px', margin: '4px 0 0 0', fontWeight: '700' }}>
                               {registrations.filter(r => r.status === 'Pending').length}
                             </h4>
                           </div>

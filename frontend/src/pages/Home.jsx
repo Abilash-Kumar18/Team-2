@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { eventService } from '../services/api';
 import './Home.css';
 
+// Import skyline outline background graphic
+import skylineOutline from '../assets/images/skyline_outline.png';
+
 export default function Home() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,7 +17,7 @@ export default function Home() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState([
-    { id: 1, text: "👋 Hi there! I'm Eventria's AI assistant. Ask me anything about hosting or registering for events, or certificates!", sender: 'bot' }
+    { id: 1, text: "👋 Hi there! I'm Campus Event's AI assistant. Ask me anything about hosting or registering for events, or certificates!", sender: 'bot' }
   ]);
 
   useEffect(() => {
@@ -74,7 +77,7 @@ export default function Home() {
       if (inputLower.includes('host') || inputLower.includes('create') || inputLower.includes('organize')) {
         botText = "To host an event, sign up or log in as an 'Organizer'. Once approved, navigate to the 'Event Plan' tab on your dashboard to start setting up events, capacity limits, and custom registration forms!";
       } else if (inputLower.includes('certificate') || inputLower.includes('cert') || inputLower.includes('award')) {
-        botText = "Eventria generates verifiably secure QR certificates automatically! Once the coordinator marks your attendance, your PDF certificate is generated instantly and can be downloaded from the 'My Certificates' tab.";
+        botText = "Campus Event generates verifiably secure QR certificates automatically! Once the coordinator marks your attendance, your PDF certificate is generated instantly and can be downloaded from the 'My Certificates' tab.";
       } else if (inputLower.includes('qr') || inputLower.includes('attendance') || inputLower.includes('check')) {
         botText = "Attendance is tracked seamlessly via QR codes. Students can view their event-specific QR pass, and event staff scan it using the scanner tool inside the dashboard to mark presence instantly.";
       } else if (inputLower.includes('login') || inputLower.includes('signup') || inputLower.includes('register')) {
@@ -90,7 +93,7 @@ export default function Home() {
       {/* Navigation */}
       <nav className="home-navbar">
         <a href="/" className="home-logo">
-          <span>⚡</span> Eventria
+          <span>⚡</span> Campus Event
         </a>
         <div className="home-nav-links">
           <a href="#features" className="home-nav-link">Features</a>
@@ -125,7 +128,7 @@ export default function Home() {
         </div>
         <h1>Transform Your Events With Real-Time Engagement</h1>
         <p>
-          Eventria revolutionizes event management with instant RSVPs, live feedback, 
+          Campus Event revolutionizes event management with instant RSVPs, live feedback, 
           and actionable insights. Perfect for college clubs, hackathons, workshops, and campus festivals.
         </p>
         <div className="home-hero-actions">
@@ -165,12 +168,14 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Why Eventria Section */}
+
+
+      {/* Why Campus Event Section */}
       <section id="future-section" className="home-section" style={{ borderTop: '1px solid rgba(255,255,255,0.03)' }}>
         <div className="section-title-block">
           <span className="section-subtitle">THE SYSTEM IN ACTION</span>
-          <h2>Why Eventria is the Future of Event Management</h2>
-          <p>Discover the comprehensive suite of features that make Eventria the most advanced AI-driven event management platform.</p>
+          <h2>Why Campus Event is the Future of Event Management</h2>
+          <p>Discover the comprehensive suite of features that make Campus Event the most advanced AI-driven event management platform.</p>
         </div>
 
         <div className="features-grid">
@@ -274,9 +279,9 @@ export default function Home() {
       {/* What Makes Us Different */}
       <section className="home-section" style={{ borderTop: '1px solid rgba(255,255,255,0.03)' }}>
         <div className="section-title-block">
-          <span className="section-subtitle">THE EVENTRIA ADVANTAGE</span>
+          <span className="section-subtitle">THE CAMPUS EVENT ADVANTAGE</span>
           <h2>What Makes Us Different</h2>
-          <p>Revolutionary features that set Eventria apart from traditional, outdated event hosting systems.</p>
+          <p>Revolutionary features that set Campus Event apart from traditional, outdated event hosting systems.</p>
         </div>
 
         <div className="services-grid">
@@ -324,13 +329,13 @@ export default function Home() {
         <div className="section-title-block">
           <span className="section-subtitle">STUDENT & ORGANIZER FEEDBACK</span>
           <h2>What Our Users Say</h2>
-          <p>Hear from college students and club organizers who have transformed their event experience using Eventria.</p>
+          <p>Hear from college students and club organizers who have transformed their event experience using Campus Event.</p>
         </div>
 
         <div className="testimonials-grid">
           <div className="testimonial-card">
             <p className="testimonial-quote">
-              "Eventria made hosting our national hackathon seamless. The QR-based check-in cut register queue times down by 90%!"
+              "Campus Event made hosting our national hackathon seamless. The QR-based check-in cut register queue times down by 90%!"
             </p>
             <div className="testimonial-user">
               <div className="testimonial-avatar">YR</div>
@@ -444,18 +449,35 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="home-footer">
-        <div className="footer-top">
+      <footer className="home-footer" style={{ position: 'relative', overflow: 'hidden' }}>
+        {/* Skyline Outline background div */}
+        <div className="footer-skyline" style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '120px',
+          backgroundImage: `url(${skylineOutline})`,
+          backgroundRepeat: 'repeat-x',
+          backgroundPosition: 'top center',
+          backgroundSize: 'auto 120px',
+          opacity: 0.18,
+          filter: 'invert(1)',
+          pointerEvents: 'none'
+        }} />
+
+        <div className="footer-top" style={{ marginTop: '60px' }}>
           <div className="footer-brand">
-            <h3><span>⚡</span> Eventria</h3>
-            <p>Revolutionizing college event management with real-time engagement tools for unforgettable experiences.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '1.2rem' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 12h4m-2-2v4m5-2h.01M17 12h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+              </svg>
+              <span style={{ fontSize: '20px', fontWeight: '800', color: '#fff', letterSpacing: '0.5px' }}>Campus Event</span>
+            </div>
+            <p style={{ maxWidth: '300px' }}>
+              Life is full of events. Don't let them pass unnoticed. Explore, experience, and excel with Campus Event – your ultimate college event companion.
+            </p>
             <div className="footer-social-links">
-              {/* X / Twitter */}
-              <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="social-circle-btn" aria-label="X">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
               {/* Facebook */}
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-circle-btn" aria-label="Facebook">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
@@ -466,6 +488,18 @@ export default function Home() {
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-circle-btn" aria-label="Instagram">
                 <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+                </svg>
+              </a>
+              {/* YouTube */}
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="social-circle-btn" aria-label="YouTube">
+                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+              {/* X / Twitter */}
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="social-circle-btn" aria-label="X">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                 </svg>
               </a>
               {/* LinkedIn */}
@@ -480,41 +514,54 @@ export default function Home() {
           <div className="footer-column">
             <h4>Quick Links</h4>
             <ul className="footer-links-list">
-              <li><a href="#features">Home</a></li>
-              <li><a href="#features">Blog</a></li>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#services">About Us</a></li>
-              <li><a href="#upcoming">Contact</a></li>
+              <li><a href="#features">Trending Events</a></li>
+              <li><a href="#features">Upcoming Fests</a></li>
+              <li><a href="#features">Event Types</a></li>
+              <li><a href="#services">Organizers</a></li>
             </ul>
           </div>
 
           <div className="footer-column">
-            <h4>Resources</h4>
+            <h4>Support</h4>
             <ul className="footer-links-list">
-              <li><a href="#features">Help Center</a></li>
-              <li><a href="#services">Feedback</a></li>
-              <li><a href="#upcoming">Terms of Service</a></li>
-              <li><a href="#upcoming">Privacy Policy</a></li>
+              <li><a href="#features">About us</a></li>
+              <li><a href="#features">FAQ</a></li>
+              <li><a href="#features">Contact</a></li>
+              <li><a href="#features">Feedback</a></li>
             </ul>
           </div>
 
           <div className="footer-column">
-            <h4>Stay Updated</h4>
-            <p className="subscribe-text">Get personalized event updates delivered straight to your inbox.</p>
-            <div className="footer-subscribe-form">
-              <input type="email" placeholder="Your email address" className="footer-subscribe-input" />
-              <button className="btn-subscribe">Subscribe Now</button>
-            </div>
+            <h4>Legal</h4>
+            <ul className="footer-links-list">
+              <li><a href="#features">Privacy Policy</a></li>
+              <li><a href="#features">Terms & Conditions</a></li>
+              <li><a href="#features">Cookie Policy</a></li>
+              <li><a href="#features">Disclaimer</a></li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Support Email Row aligned to the right columns */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', maxWidth: '1200px', margin: '0 auto 2.5rem', paddingRight: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a5a2bc', fontSize: '0.875rem' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <a href="mailto:support@campusevent.com" style={{ color: '#a5a2bc', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#fff'} onMouseOut={(e) => e.target.style.color = '#a5a2bc'}>
+              support@campusevent.com
+            </a>
           </div>
         </div>
 
         <div className="footer-bottom">
-          <p>© 2026 Eventria. All rights reserved.</p>
+          <p>© 2026 Campus Event. Powered by ECLearnix EdTech Private Limited.</p>
           <div className="footer-bottom-links">
-            <a href="#privacy">Terms</a>
-            <a href="#privacy">Privacy</a>
-            <a href="#privacy">Cookies</a>
-            <a href="#privacy">Contact</a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', color: '#34d399', fontWeight: '600' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 8px #10b981', display: 'inline-block' }}></span>
+              All Systems Operational
+            </div>
           </div>
         </div>
       </footer>
@@ -530,7 +577,7 @@ export default function Home() {
             <div className="chat-header-info">
               <div className="chat-header-avatar">🤖</div>
               <div className="chat-header-status">
-                <h4>Eventria Bot</h4>
+                <h4>Campus Event Bot</h4>
                 <span>Online</span>
               </div>
             </div>

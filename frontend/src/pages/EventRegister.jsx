@@ -3,6 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../services/api';
 import './EventRegister.css';
 
+// Import local images from assets
+import hackathonImg from '../assets/images/hackathon.jpg';
+import robotWarsImg from '../assets/images/robot_wars.jpg';
+import culturalFusionImg from '../assets/images/cultural_fusion.jpg';
+import reactWorkshopImg from '../assets/images/react_workshop.jpg';
+import defaultEventImg from '../assets/images/default_event.jpg';
+
 export default function EventRegister() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -61,12 +68,30 @@ export default function EventRegister() {
     if (storedCustomEvents) {
       try { allEvents = JSON.parse(storedCustomEvents); } catch { }
     }
+    const getEventImage = (evt) => {
+      if (evt.imageUrl) return evt.imageUrl;
+      const titleLower = (evt.title || '').toLowerCase();
+      if (titleLower.includes('hack') || titleLower.includes('code') || titleLower.includes('tech') || titleLower.includes('program')) {
+        return hackathonImg;
+      }
+      if (titleLower.includes('robo') || titleLower.includes('robot') || titleLower.includes('wars') || titleLower.includes('mech')) {
+        return robotWarsImg;
+      }
+      if (titleLower.includes('cultural') || titleLower.includes('fusion') || titleLower.includes('music') || titleLower.includes('dance') || titleLower.includes('art') || titleLower.includes('fest')) {
+        return culturalFusionImg;
+      }
+      if (titleLower.includes('workshop') || titleLower.includes('react') || titleLower.includes('web') || titleLower.includes('learn') || titleLower.includes('craft')) {
+        return reactWorkshopImg;
+      }
+      return defaultEventImg;
+    };
+
     // Also check default mock events
     const defaultEvents = [
-      { _id: 'mock_event_1', title: 'Smart Tech Hackathon', description: 'A 24-hour coding marathon where students solve real-world industry challenges using cutting-edge AI and web technologies.', date: '2026-07-15T09:00:00.000Z', location: 'Main Seminar Hall', capacity: 100, clubName: 'Coding Club', organizer: { name: 'Coding Club Coordinator', email: 'coding@college.edu' } },
-      { _id: 'mock_event_2', title: 'Robo Wars 2026', description: 'Design, build, and battle! Watch custom-engineered robots clash in a high-octane battle arena to win the grand cash prize.', date: '2026-07-22T10:00:00.000Z', location: 'College Indoor Stadium', capacity: 60, clubName: 'Robotics Club', organizer: { name: 'Robotics Coordinator', email: 'robotics@college.edu' } },
-      { _id: 'mock_event_3', title: 'Cultural Fusion 2026', description: 'An evening of music, choreography, and dramatic performances celebrating national heritage and student talent.', date: '2026-08-05T17:00:00.000Z', location: 'Open Air Auditorium', capacity: 600, clubName: 'Arts & Music Club', organizer: { name: 'Cultural Committee', email: 'cultural@college.edu' } },
-      { _id: 'mock_event_4', title: 'Web Craft React Workshop', description: 'Learn modern single-page application development using React, Vite, and tailwind. Perfect for beginners and intermediates.', date: '2026-06-10T10:00:00.000Z', location: 'CSE Department Lab 3', capacity: 40, clubName: 'Web Dev Club', organizer: { name: 'Web Dev Coordinator', email: 'webdev@college.edu' } }
+      { _id: 'mock_event_1', title: 'Smart Tech Hackathon', description: 'A 24-hour coding marathon where students solve real-world industry challenges using cutting-edge AI and web technologies.', date: '2026-07-15T09:00:00.000Z', location: 'Main Seminar Hall', capacity: 100, clubName: 'Coding Club', organizer: { name: 'Coding Club Coordinator', email: 'coding@college.edu' }, imageUrl: hackathonImg },
+      { _id: 'mock_event_2', title: 'Robo Wars 2026', description: 'Design, build, and battle! Watch custom-engineered robots clash in a high-octane battle arena to win the grand cash prize.', date: '2026-07-22T10:00:00.000Z', location: 'College Indoor Stadium', capacity: 60, clubName: 'Robotics Club', organizer: { name: 'Robotics Coordinator', email: 'robotics@college.edu' }, imageUrl: robotWarsImg },
+      { _id: 'mock_event_3', title: 'Cultural Fusion 2026', description: 'An evening of music, choreography, and dramatic performances celebrating national heritage and student talent.', date: '2026-08-05T17:00:00.000Z', location: 'Open Air Auditorium', capacity: 600, clubName: 'Arts & Music Club', organizer: { name: 'Cultural Committee', email: 'cultural@college.edu' }, imageUrl: culturalFusionImg },
+      { _id: 'mock_event_4', title: 'Web Craft React Workshop', description: 'Learn modern single-page application development using React, Vite, and tailwind. Perfect for beginners and intermediates.', date: '2026-06-10T10:00:00.000Z', location: 'CSE Department Lab 3', capacity: 40, clubName: 'Web Dev Club', organizer: { name: 'Web Dev Coordinator', email: 'webdev@college.edu' }, imageUrl: reactWorkshopImg }
     ];
     const mergedEvents = [...allEvents, ...defaultEvents];
     const found = mergedEvents.find(e => e._id === eventId);
@@ -233,7 +258,14 @@ export default function EventRegister() {
         <div className="er-layout">
           {/* Left: Event Details Card */}
           <div className="er-event-card">
-            <div className="er-event-banner">
+            <div 
+              className="er-event-banner"
+              style={{
+                backgroundImage: `url(${getEventImage(event)})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
               <span className="er-event-club">{event.clubName || 'College Club'}</span>
             </div>
             <div className="er-event-body">
