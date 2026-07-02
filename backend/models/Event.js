@@ -5,30 +5,52 @@ const eventSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      trim: true,
     },
     description: {
       type: String,
-      required: true,
+      trim: true,
     },
-    date: {
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    organizerDept: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    dateTime: {
       type: Date,
       required: true,
     },
-    location: {
+    venue: {
       type: String,
       required: true,
+      trim: true,
     },
-    capacity: {
+    maxParticipants: {
       type: Number,
       required: true,
     },
-    organizer: {
+    posterUrl: {
+      type: String,
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ['Upcoming', 'Closed', 'Pending Review', 'Approved', 'Rejected'],
+      default: 'Pending Review',
+    },
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    qrCodeUrl: {
-      type: String,
+    requestedFaculty: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
   },
   {

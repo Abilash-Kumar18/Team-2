@@ -2,26 +2,37 @@ const mongoose = require('mongoose');
 
 const registrationSchema = new mongoose.Schema(
   {
-    event: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Event',
-      required: true,
-    },
-    user: {
+    studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    qrCodeData: {
-      type: String,
+    eventId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event',
       required: true,
     },
-    checkedIn: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      enum: ['Registered', 'Checked-in', 'Pending', 'Cancelled', 'Absent'],
+      default: 'Registered',
     },
-    checkInTime: {
+    qrCodeId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    sixDigitId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    scanTime: {
       type: Date,
+    },
+    points: {
+      type: Number,
+      default: 0,
     },
   },
   {
